@@ -1,10 +1,21 @@
 import * as vscode from "vscode";
+import { computeDiagram } from "./diagram/computeDiagram";
 
 const DIAGRAM_URL = vscode.Uri.parse("tsuml://preview");
 let tsFile: vscode.TextDocument;
 class DiagramViewer implements vscode.TextDocumentContentProvider {
     public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): string {
-        return `<div>${tsFile.fileName} ${tsFile.lineCount} lines</div>`;
+        const models = computeDiagram(tsFile);
+        const printableModels = models.map((m) => ({
+            memberGraph: m.memberGraph,
+            name: m.name,
+        }));
+        return `
+            <div>${tsFile.fileName} ${tsFile.lineCount} lines</div>
+            <pre><code>${
+                JSON.stringify(printableModels, undefined, 2)
+            }</code></pre>
+        `;
     }
 }
 const diagramViewer = new DiagramViewer();
