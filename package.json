@@ -11,14 +11,20 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:tsuml.show"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [{
-            "command": "extension.sayHello",
-            "title": "Hello World"
-        }]
+            "command": "tsuml.show",
+            "title": "Show typescript uml"
+        }],
+        "keybindings": [
+        {
+            "command": "tsuml.show",
+            "key": "Shift+Alt+T"
+        }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "tsc -p ./",
