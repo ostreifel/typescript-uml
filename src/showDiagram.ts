@@ -1,3 +1,4 @@
+import * as path from "path";
 import * as vscode from "vscode";
 import { computeDiagram } from "./diagram/computeDiagram";
 
@@ -11,7 +12,7 @@ class DiagramViewer implements vscode.TextDocumentContentProvider {
             name: m.name,
         }));
         return `
-            <div>${tsFile.fileName} ${tsFile.lineCount} lines</div>
+            <div>${path.parse(tsFile.fileName).base} ${tsFile.lineCount} lines</div>
             <pre><code>${
                 JSON.stringify(printableModels, undefined, 2)
             }</code></pre>
@@ -38,7 +39,7 @@ export function registerDiagram(): vscode.Disposable[] {
         return vscode.commands.executeCommand("vscode.previewHtml",
             DIAGRAM_URL,
             vscode.ViewColumn.One,
-            `${tsFile.fileName} diagram`,
+            `${path.parse(tsFile.fileName).base} diagram`,
         ).then(
             (success) => {
                 // update preview
