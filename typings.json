@@ -1,0 +1,5 @@
+{
+  "globalDependencies": {
+    "index": "github:phreed/ts-typings/index.d.ts#7a3e013e6b2a1a6bfc643cf173912eea1e14ebac"
+  }
+}

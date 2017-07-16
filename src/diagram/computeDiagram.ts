@@ -23,6 +23,16 @@ function getClasses(node: ts.Node) {
     return classes;
 }
 
+function getFunctions(node: ts.Node) {
+    const functions: ts.FunctionDeclaration[] = [];
+    node.forEachChild((n) => {
+        if (n.kind === ts.SyntaxKind.FunctionDeclaration) {
+            functions.push(n as ts.FunctionDeclaration);
+        }
+    });
+    return functions;
+}
+
 function classesToDiagram(models: IClassModel[]): IDiagramModel {
     const diagram: IDiagramModel = [];
     for (const model of models) {
@@ -39,10 +49,18 @@ function classesToDiagram(models: IClassModel[]): IDiagramModel {
                     name: member,
                 },
             });
-            diagram.push({ data: { source: model.name, target: `${model.name}.${member}` } });
+            diagram.push({ data: {
+                source: model.name,
+                target: `${model.name}.${member}`,
+                weight: 1,
+            } });
             const links = model.memberGraph[member];
             for (const link in links) {
-                diagram.push({ data: { source: `${model.name}.${member}`, target: `${model.name}.${link}` } });
+                diagram.push({ data: {
+                    source: `${model.name}.${member}`,
+                    target: `${model.name}.${link}`,
+                    weight: links[link],
+                } });
             }
         }
     }

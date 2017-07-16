@@ -35,6 +35,7 @@
     "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
+    "@types/jquery": "^3.2.8",
     "@types/mocha": "^2.2.32",
     "@types/node": "^6.0.40",
     "cytoscape": "^3.1.3",
