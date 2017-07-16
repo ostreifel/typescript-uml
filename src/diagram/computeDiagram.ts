@@ -35,14 +35,14 @@ function classesToDiagram(models: IClassModel[]): IDiagramModel {
         for (const member in model.memberGraph) {
             diagram.push({
                 data: {
-                    id: member,
+                    id: `${model.name}.${member}`,
                     name: member,
                 },
             });
-            diagram.push({ data: { source: model.name, target: member } });
+            diagram.push({ data: { source: model.name, target: `${model.name}.${member}` } });
             const links = model.memberGraph[member];
             for (const link in links) {
-                diagram.push({ data: { source: member, target: link } });
+                diagram.push({ data: { source: `${model.name}.${member}`, target: `${model.name}.${link}` } });
             }
         }
     }
