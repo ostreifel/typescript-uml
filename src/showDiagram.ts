@@ -13,20 +13,14 @@ function replaceAll(original: string, target: string, replacement: string): stri
 
 class DiagramViewer implements vscode.TextDocumentContentProvider {
     public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): string {
-        const models = computeDiagram(tsFile);
-        const printableModels = models.map((m) => ({
-            memberGraph: m.memberGraph,
-            name: m.name,
-        }));
-        const jsPath = "file:///" + path.join(ctx.extensionPath, "out", "js");
-
-        return this.getHtml(jsPath, printableModels);
+        const diagram = computeDiagram(tsFile);
+        return this.getHtml(ctx.extensionPath, diagram);
     }
-    private getHtml(jsPath: string, models: any): string {
+    private getHtml(rootPath: string, models: any): string {
         const tplPath: string = path.join(ctx.extensionPath, "html");
         const tplPreviewPath = path.join(tplPath, "diagram.html");
         let contents = fs.readFileSync(tplPreviewPath, "utf-8");
-        contents = replaceAll(contents, "${jsPath}", JSON.stringify(jsPath));
+        contents = replaceAll(contents, "${rootPath}", rootPath);
         contents = replaceAll(contents, "${models}", JSON.stringify(models, undefined, 2));
         return contents;
     }

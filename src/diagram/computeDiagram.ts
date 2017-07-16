@@ -23,12 +23,34 @@ function getClasses(node: ts.Node) {
     return classes;
 }
 
-// function classesToDiagram(models: IClassModel[]): IDiagramModel {
-//     const diagram: IDiagramModel
-// }
+function classesToDiagram(models: IClassModel[]): IDiagramModel {
+    const diagram: IDiagramModel = [];
+    for (const model of models) {
+        diagram.push({
+            data: {
+                id: model.name,
+                name: model.name,
+            },
+        });
+        for (const member in model.memberGraph) {
+            diagram.push({
+                data: {
+                    id: member,
+                    name: member,
+                },
+            });
+            diagram.push({ data: { source: model.name, target: member } });
+            const links = model.memberGraph[member];
+            for (const link in links) {
+                diagram.push({ data: { source: member, target: link } });
+            }
+        }
+    }
+    return diagram;
+}
 
-export function computeDiagram(document: vscode.TextDocument): IClassModel[] {
+export function computeDiagram(document: vscode.TextDocument): IDiagramModel {
     const ast = getAst(document.fileName);
     const models = getClasses(ast).map((n) => getClassModel(n));
-    return models;
+    return classesToDiagram(models);
 }
