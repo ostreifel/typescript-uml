@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import * as ts from "typescript";
 import * as vscode from "vscode";
 import { getClassModel, IClassModel } from "./ClassModel";
+import { IDiagramModel } from "./DiagramModel";
 
 function getAst(fileName: string): ts.SourceFile {
     return ts.createSourceFile(
@@ -21,6 +22,10 @@ function getClasses(node: ts.Node) {
     });
     return classes;
 }
+
+// function classesToDiagram(models: IClassModel[]): IDiagramModel {
+//     const diagram: IDiagramModel
+// }
 
 export function computeDiagram(document: vscode.TextDocument): IClassModel[] {
     const ast = getAst(document.fileName);

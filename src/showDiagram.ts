@@ -1,9 +1,16 @@
+import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 import { computeDiagram } from "./diagram/computeDiagram";
+import { ctx } from "./extension";
 
 const DIAGRAM_URL = vscode.Uri.parse("tsuml://preview");
 let tsFile: vscode.TextDocument;
+
+function replaceAll(original: string, target: string, replacement: string): string {
+    return original.split(target).join(replacement);
+}
+
 class DiagramViewer implements vscode.TextDocumentContentProvider {
     public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): string {
         const models = computeDiagram(tsFile);
@@ -11,12 +18,17 @@ class DiagramViewer implements vscode.TextDocumentContentProvider {
             memberGraph: m.memberGraph,
             name: m.name,
         }));
-        return `
-            <div>${path.parse(tsFile.fileName).base} ${tsFile.lineCount} lines</div>
-            <pre><code>${
-                JSON.stringify(printableModels, undefined, 2)
-            }</code></pre>
-        `;
+        const jsPath = "file:///" + path.join(ctx.extensionPath, "out", "js");
+
+        return this.getHtml(jsPath, printableModels);
+    }
+    private getHtml(jsPath: string, models: any): string {
+        const tplPath: string = path.join(ctx.extensionPath, "html");
+        const tplPreviewPath = path.join(tplPath, "diagram.html");
+        let contents = fs.readFileSync(tplPreviewPath, "utf-8");
+        contents = replaceAll(contents, "${jsPath}", JSON.stringify(jsPath));
+        contents = replaceAll(contents, "${models}", JSON.stringify(models, undefined, 2));
+        return contents;
     }
 }
 const diagramViewer = new DiagramViewer();
