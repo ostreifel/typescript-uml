@@ -1,11 +1,13 @@
-export interface IDiagramNode {
+export interface IDiagramElement {}
+
+export interface IDiagramNode extends IDiagramElement {
     data: {
         id: string;
         name: string;
     };
 }
 
-export interface IDiagramEdge {
+export interface IDiagramEdge extends IDiagramElement {
     data: {
         source: string;
         target: string;

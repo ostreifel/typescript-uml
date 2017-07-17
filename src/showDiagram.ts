@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { computeDiagram } from "./diagram/computeDiagram";
+import { computeDiagramForFile } from "./diagram/computeReferences";
 import { ctx } from "./extension";
 
 const DIAGRAM_URL = vscode.Uri.parse("tsuml://preview");
@@ -13,7 +13,7 @@ function replaceAll(original: string, target: string, replacement: string): stri
 
 class DiagramViewer implements vscode.TextDocumentContentProvider {
     public provideTextDocumentContent(uri: vscode.Uri, token: vscode.CancellationToken): string {
-        const diagram = computeDiagram(tsFile);
+        const diagram = computeDiagramForFile(tsFile.fileName);
         return this.getHtml(ctx.extensionPath, diagram);
     }
     private getHtml(rootPath: string, models: any): string {
@@ -44,7 +44,7 @@ export function registerDiagram(): vscode.Disposable[] {
 
         return vscode.commands.executeCommand("vscode.previewHtml",
             DIAGRAM_URL,
-            vscode.ViewColumn.One,
+            vscode.window.activeTextEditor.viewColumn,
             `${path.parse(tsFile.fileName).base} diagram`,
         ).then(
             (success) => {
