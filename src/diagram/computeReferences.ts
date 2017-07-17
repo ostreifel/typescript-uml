@@ -4,6 +4,7 @@ import { IDiagramEdge, IDiagramElement } from "./DiagramModel";
 interface IReferencesContext {
     root: ts.Symbol;
     typechecker: ts.TypeChecker;
+    references: {[fromTo: string]: IDiagramEdge};
 }
 
 function getSymbolTable(fileName: string): IReferencesContext {
@@ -13,6 +14,7 @@ function getSymbolTable(fileName: string): IReferencesContext {
     return {
         root: typechecker.getSymbolAtLocation(sourceFile),
         typechecker,
+        references: {},
     };
 }
 
@@ -85,15 +87,23 @@ function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourc
             if (targetName === sourceName) {
                 return;
             }
-            const identId = getIdentifierId(ctx, ident);
-            if (identId) {
-                references.push({
-                    data: {
-                        source: `${sourceId}.${sourceName}`,
-                        target: identId,
-                        weight : 1,
-                    },
-                });
+            const target = getIdentifierId(ctx, ident);
+            const source = `${sourceId}.${sourceName}`;
+            if (target) {
+                const fromTo = `${source}-${target}`;
+                if (fromTo in ctx.references) {
+                    ctx.references[fromTo].data.weight++;
+                } else {
+                    const edge: IDiagramEdge = {
+                        data: {
+                            source,
+                            target,
+                            weight : 1,
+                        },
+                    };
+                    references.push(edge);
+                    ctx.references[fromTo] = edge;
+                }
             }
         }
     });
