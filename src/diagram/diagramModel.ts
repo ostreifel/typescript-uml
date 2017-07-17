@@ -11,6 +11,7 @@ export interface IDiagramEdge extends IDiagramElement {
     data: {
         source: string;
         target: string;
+        weight: number;
     };
 }
 

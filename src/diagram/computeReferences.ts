@@ -1,7 +1,12 @@
 import * as ts from "typescript";
-import { IDiagramElement } from "./DiagramModel";
+import { IDiagramEdge, IDiagramElement } from "./DiagramModel";
 
-function getSymbolTable(fileName: string) {
+interface IReferencesContext {
+    root: ts.Symbol;
+    typechecker: ts.TypeChecker;
+}
+
+function getSymbolTable(fileName: string): IReferencesContext {
     const program = ts.createProgram([fileName], {});
     const sourceFile = program.getSourceFile(fileName);
     const typechecker = program.getTypeChecker();
@@ -19,16 +24,16 @@ function getValues<T>(m: ts.Map<T>): T[] {
     return values;
 }
 
-function childReferences(typechecker: ts.TypeChecker, symbol: ts.Symbol, idPrefix: string): IDiagramElement[] {
+function childReferences(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix: string): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
     if (symbol.exports) {
         getValues(symbol.exports).map((v) =>
-            elements.push(...computeDiagram(typechecker, v, "")),
+            elements.push(...computeDiagram(ctx, v, idPrefix)),
         );
     }
     if (symbol.members) {
         getValues(symbol.members).map((v) =>
-            elements.push(...computeDiagram(typechecker, v, "")),
+            elements.push(...computeDiagram(ctx, v, idPrefix)),
         );
     }
     return elements;
@@ -43,9 +48,59 @@ function getName(sym: ts.Symbol): string | null {
     return ident && ident.text || null;
 }
 
-// function referencedNodes(typechecker: ts.TypeChecker, symbol: ts.Symbol, )
+function walkChildren(node: ts.Node, visitor: (n: ts.Node) => void) {
+    node.forEachChild((child) => {
+        visitor(child);
+        walkChildren(child, visitor);
+    });
+}
 
-function inheritenceElement(typechecker: ts.TypeChecker, symbol: ts.Symbol, idPrefix: string, name: string) {
+function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
+    // identifier.flags
+    const identName = identifier.text;
+    let currNode: ts.Node = identifier;
+    while (currNode.parent) {
+        currNode = currNode.parent;
+        const locals: undefined | ts.Map<ts.Symbol> = currNode["locals"];
+        if (locals && locals.has(identName)) {
+            return null;
+        }
+    }
+    const identType = ctx.typechecker.getTypeAtLocation(identifier);
+    const id = identType.symbol ? ctx.typechecker.getFullyQualifiedName(identType.symbol) : "";
+    if (id.startsWith(ctx.root.name)) {
+        return id;
+    }
+    return null;
+}
+
+function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourceId: string): IDiagramEdge[] {
+    const references: IDiagramEdge[] = [];
+    const sourceName = getName(sourceSymbol);
+    walkChildren(sourceSymbol.valueDeclaration, (targetNode) => {
+        if (targetNode.kind === ts.SyntaxKind.Identifier) {
+            const ident = targetNode as ts.Identifier;
+            const targetName = ident.text;
+            // TODO handle shadowed method names
+            if (targetName === sourceName) {
+                return;
+            }
+            const identId = getIdentifierId(ctx, ident);
+            if (identId) {
+                references.push({
+                    data: {
+                        source: `${sourceId}.${sourceName}`,
+                        target: identId,
+                        weight : 1,
+                    },
+                });
+            }
+        }
+    });
+    return references;
+}
+
+function inheritenceElement(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix: string, name: string) {
     const elements: IDiagramElement[] = [];
     elements.push({
         data: {
@@ -53,8 +108,8 @@ function inheritenceElement(typechecker: ts.TypeChecker, symbol: ts.Symbol, idPr
             name,
         },
     });
-    if (symbol.exports) {
-        getValues(symbol.exports).map((v) => {
+    function pushSymbolTable(table: ts.Map<ts.Symbol>) {
+        getValues(table).map((v) => {
             const vName = getName(v);
             if (!vName) {
                 return;
@@ -74,50 +129,37 @@ function inheritenceElement(typechecker: ts.TypeChecker, symbol: ts.Symbol, idPr
                     },
                 },
             ]);
+            elements.push(...referencedNodes(ctx, v, `${idPrefix}.${name}`));
         });
     }
+    if (symbol.exports) {
+        pushSymbolTable(symbol.exports);
+    }
     if (symbol.members) {
-        getValues(symbol.members).map((v) => {
-            const vName = getName(v);
-            if (!vName) {
-                return;
-            }
-            elements.push(...[
-                {
-                    data: {
-                        id: `${idPrefix}.${name}.${vName}`,
-                        name: vName,
-                    },
-                },
-                {
-                    data: {
-                        source: `${idPrefix}.${name}`,
-                        target: `${idPrefix}.${name}.${vName}`,
-                        weight: 1,
-                    },
-                },
-            ]);
-
-        });
+        pushSymbolTable(symbol.members);
     }
     return elements;
 }
 
-function computeDiagram(typechecker: ts.TypeChecker, symbol: ts.Symbol, idPrefix: string = ""): IDiagramElement[] {
+function computeDiagram(
+    ctx: IReferencesContext,
+    symbol: ts.Symbol,
+    idPrefix: string = ctx.root.name,
+): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
     const symName = getName(symbol);
     if (symbol.flags & ts.SymbolFlags.ValueModule) {
-        elements.push(...childReferences(typechecker, symbol, ""));
+        elements.push(...childReferences(ctx, symbol, idPrefix));
     } else if (
         symbol.flags & ts.SymbolFlags.ModuleMember
         && symName
     ) {
-        elements.push(...inheritenceElement(typechecker, symbol, `${idPrefix}.${symName}`, symName));
+        elements.push(...inheritenceElement(ctx, symbol, idPrefix, symName));
     }
     return elements;
 }
 
 export function computeDiagramForFile(fileName: string): IDiagramElement[] {
-    const { root, typechecker } = getSymbolTable(fileName);
-    return computeDiagram(typechecker, root);
+    const ctx: IReferencesContext = getSymbolTable(fileName);
+    return computeDiagram(ctx, ctx.root);
 }

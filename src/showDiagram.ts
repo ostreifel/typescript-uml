@@ -21,7 +21,7 @@ class DiagramViewer implements vscode.TextDocumentContentProvider {
         const tplPreviewPath = path.join(tplPath, "diagram.html");
         let contents = fs.readFileSync(tplPreviewPath, "utf-8");
         contents = replaceAll(contents, "${rootPath}", rootPath);
-        contents = replaceAll(contents, "${models}", JSON.stringify(models, undefined, 2));
+        contents = replaceAll(contents, "${models}", JSON.stringify(models));
         return contents;
     }
 }
