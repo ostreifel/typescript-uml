@@ -1,10 +1,11 @@
 import * as ts from "typescript";
-import { IDiagramEdge, IDiagramElement } from "./DiagramModel";
+import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./DiagramModel";
 
 interface IReferencesContext {
     root: ts.Symbol;
     typechecker: ts.TypeChecker;
     references: {[fromTo: string]: IDiagramEdge};
+    nodes: {[id: string]: IDiagramNode};
 }
 
 function getSymbolTable(fileName: string): IReferencesContext {
@@ -15,6 +16,7 @@ function getSymbolTable(fileName: string): IReferencesContext {
         root: typechecker.getSymbolAtLocation(sourceFile),
         typechecker,
         references: {},
+        nodes: {},
     };
 }
 
@@ -26,7 +28,12 @@ function getValues<T>(m: ts.Map<T>): T[] {
     return values;
 }
 
-function childReferences(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix: string): IDiagramElement[] {
+function childReferences(
+    ctx: IReferencesContext,
+    symbol: ts.Symbol,
+    idPrefix: string,
+    includeLocals?: boolean,
+): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
     if (symbol.exports) {
         getValues(symbol.exports).map((v) =>
@@ -37,6 +44,12 @@ function childReferences(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix: s
         getValues(symbol.members).map((v) =>
             elements.push(...computeDiagram(ctx, v, idPrefix)),
         );
+    }
+    if (includeLocals && symbol.valueDeclaration && symbol.valueDeclaration["locals"]) {
+        getValues(symbol.valueDeclaration["locals"] as ts.Map<ts.Symbol>).map((v) => {
+            elements.push(...computeDiagram(ctx, v, idPrefix));
+            elements.push(...referencedNodes(ctx, v, idPrefix));
+        });
     }
     return elements;
 }
@@ -60,22 +73,31 @@ function walkChildren(node: ts.Node, visitor: (n: ts.Node) => void) {
     });
 }
 
-function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
-    // identifier.flags
-    const identName = identifier.text;
-    let currNode: ts.Node = identifier;
-    while (currNode.parent) {
-        currNode = currNode.parent;
-        const locals: undefined | ts.Map<ts.Symbol> = currNode["locals"];
-        if (locals && locals.has(identName)) {
-            return null;
-        }
+function prependFileToRootLocal(ctx: IReferencesContext, id: string, identType: ts.Type): string {
+    if (
+        !identType ||
+        !identType.symbol ||
+        !identType.symbol.valueDeclaration ||
+        !identType.symbol.valueDeclaration.parent
+    ) {
+        return "";
     }
+    const fileName = (identType.symbol.valueDeclaration.parent as ts.SourceFile).fileName;
+    return `${ctx.root.name}.${id}`;
+}
+
+function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
     const identType = ctx.typechecker.getTypeAtLocation(identifier);
-    const id = identType && identType.symbol ? ctx.typechecker.getFullyQualifiedName(identType.symbol) : "";
+    if (!identType || !identType.symbol) {
+        return null;
+    }
+    let id = ctx.typechecker.getFullyQualifiedName(identType.symbol);
+    id = prependFileToRootLocal(ctx, id, identType);
+
     if (id.startsWith(ctx.root.name)) {
         return id;
     }
+
     return null;
 }
 
@@ -113,7 +135,13 @@ function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourc
     return references;
 }
 
-function inheritenceElement(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix: string, name: string) {
+function inheritenceElement(
+    ctx: IReferencesContext,
+    symbol: ts.Symbol,
+    idPrefix: string,
+    name: string,
+    includeLocals: boolean,
+) {
     const elements: IDiagramElement[] = [];
     elements.push({
         data: {
@@ -151,6 +179,13 @@ function inheritenceElement(ctx: IReferencesContext, symbol: ts.Symbol, idPrefix
     if (symbol.members) {
         pushSymbolTable(symbol.members);
     }
+    if (
+        includeLocals &&
+        symbol.valueDeclaration &&
+        symbol.valueDeclaration["locals"]
+    ) {
+        pushSymbolTable(symbol.valueDeclaration["locals"]);
+    }
     return elements;
 }
 
@@ -162,12 +197,12 @@ function computeDiagram(
     const elements: IDiagramElement[] = [];
     const symName = getName(symbol);
     if (symbol.flags & ts.SymbolFlags.ValueModule) {
-        elements.push(...childReferences(ctx, symbol, idPrefix));
+        elements.push(...childReferences(ctx, symbol, idPrefix, symbol.name === ctx.root.name));
     } else if (
         symbol.flags & ts.SymbolFlags.ModuleMember
         && symName
     ) {
-        elements.push(...inheritenceElement(ctx, symbol, idPrefix, symName));
+        elements.push(...inheritenceElement(ctx, symbol, idPrefix, symName, symbol.name === ctx.root.name));
     }
     return elements;
 }
