@@ -72,7 +72,7 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
         }
     }
     const identType = ctx.typechecker.getTypeAtLocation(identifier);
-    const id = identType.symbol ? ctx.typechecker.getFullyQualifiedName(identType.symbol) : "";
+    const id = identType && identType.symbol ? ctx.typechecker.getFullyQualifiedName(identType.symbol) : "";
     if (id.startsWith(ctx.root.name)) {
         return id;
     }
