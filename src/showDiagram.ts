@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
-import { computeDiagramForFile } from "./diagram/computeReferences";
+import { computeDiagramForFile } from "./diagram/computeDiagram";
 import { ctx } from "./extension";
 
 const DIAGRAM_URL = vscode.Uri.parse("tsuml://preview");
