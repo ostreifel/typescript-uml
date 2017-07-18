@@ -92,8 +92,10 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
         return null;
     }
     let id = ctx.typechecker.getFullyQualifiedName(identType.symbol);
+    if (id.startsWith(ctx.root.name)) {
+        return id;
+    }
     id = prependFileToRootLocal(ctx, id, identType);
-
     if (id.startsWith(ctx.root.name)) {
         return id;
     }
