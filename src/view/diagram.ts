@@ -4,8 +4,9 @@ function getStyle(): any {
     return cytoscape["stylesheet"]()
         .selector("node")
         .css({
-            "background-color": "blue",
+            "background-color": "data(color)",
             "color": "white",
+            "shape": "data(shape)",
             "content": "data(name)",
             "text-outline-color": "black",
             "text-outline-width": 2,
@@ -47,8 +48,8 @@ function run() {
         autounselectify: true,
         boxSelectionEnabled: false,
         style: getStyle(),
-        layout: coseLayout(),
-
+        layout: {name: "grid"} as Cy.GridLayoutOptions,
     });
+    // TODO more advanced layout here - select neighborhoods
 }
 setTimeout(run, 0);

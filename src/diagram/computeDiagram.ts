@@ -1,5 +1,6 @@
 import * as ts from "typescript";
 import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./DiagramModel";
+import { getSymbolProperties } from "./symboProperties";
 
 interface IReferencesContext {
     root: ts.Symbol;
@@ -82,7 +83,19 @@ function prependFileToRootLocal(ctx: IReferencesContext, id: string, identType: 
     ) {
         return "";
     }
-    const fileName = (identType.symbol.valueDeclaration.parent as ts.SourceFile).fileName;
+    let currNode: ts.Node = identType.symbol.valueDeclaration;
+    const levelsUp = id.split(".").length + 1;
+    for (let i = 0; i < levelsUp; i++) {
+        if (!currNode.parent) {
+            return "";
+        }
+        currNode = currNode.parent;
+    }
+    const fileName = (currNode as ts.SourceFile).fileName;
+    const rootLocals: ts.Map<ts.Symbol> = ctx.root.valueDeclaration["locals"];
+    if (!fileName || (rootLocals && !rootLocals.has(id.split(".")[0]))) {
+        return "";
+    }
     return `${ctx.root.name}.${id}`;
 }
 
@@ -149,6 +162,7 @@ function inheritenceElement(
         data: {
             id: `${idPrefix}.${name}`,
             name,
+            ...getSymbolProperties(symbol),
         },
     });
     function pushSymbolTable(table: ts.Map<ts.Symbol>) {
@@ -162,13 +176,8 @@ function inheritenceElement(
                     data: {
                         id: `${idPrefix}.${name}.${vName}`,
                         name: vName,
-                    },
-                },
-                {
-                    data: {
-                        source: `${idPrefix}.${name}`,
-                        target: `${idPrefix}.${name}.${vName}`,
-                        weight: 1,
+                        parent: `${idPrefix}.${name}`,
+                        ...getSymbolProperties(v),
                     },
                 },
             ]);
