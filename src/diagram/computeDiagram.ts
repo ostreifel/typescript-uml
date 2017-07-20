@@ -29,6 +29,8 @@ function getValues<T>(m: ts.Map<T>): T[] {
     return values;
 }
 
+// tslint:disable-next-line:max-line-length
+// TODO use https://github.com/palantir/tslint/blob/0b477310d27ca478af87ec6b0fff8314294e629a/src/rules/noUnusedVariableRule.ts
 function childReferences(
     ctx: IReferencesContext,
     symbol: ts.Symbol,
@@ -74,41 +76,31 @@ function walkChildren(node: ts.Node, visitor: (n: ts.Node) => void) {
     });
 }
 
-function prependFileToRootLocal(ctx: IReferencesContext, id: string, identType: ts.Type): string {
+function prependFileToRootLocal(ctx: IReferencesContext, id: string, symbol: ts.Symbol): string {
     if (
-        !identType ||
-        !identType.symbol ||
-        !identType.symbol.valueDeclaration ||
-        !identType.symbol.valueDeclaration.parent
+        !symbol ||
+        !symbol.valueDeclaration ||
+        !symbol.valueDeclaration.parent
     ) {
         return "";
     }
-    let currNode: ts.Node = identType.symbol.valueDeclaration;
-    const levelsUp = id.split(".").length + 1;
-    for (let i = 0; i < levelsUp; i++) {
-        if (!currNode.parent) {
-            return "";
-        }
-        currNode = currNode.parent;
-    }
-    const fileName = (currNode as ts.SourceFile).fileName;
     const rootLocals: ts.Map<ts.Symbol> = ctx.root.valueDeclaration["locals"];
-    if (!fileName || (rootLocals && !rootLocals.has(id.split(".")[0]))) {
+    if (rootLocals && !rootLocals.has(id.split(".")[0])) {
         return "";
     }
     return `${ctx.root.name}.${id}`;
 }
 
 function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
-    const identType = ctx.typechecker.getTypeAtLocation(identifier);
-    if (!identType || !identType.symbol) {
+    const symbol = ctx.typechecker.getSymbolAtLocation(identifier);
+    if (!symbol || !symbol.valueDeclaration) {
         return null;
     }
-    let id = ctx.typechecker.getFullyQualifiedName(identType.symbol);
+    let id = ctx.typechecker.getFullyQualifiedName(symbol);
     if (id.startsWith(ctx.root.name)) {
         return id;
     }
-    id = prependFileToRootLocal(ctx, id, identType);
+    id = prependFileToRootLocal(ctx, id, symbol);
     if (id.startsWith(ctx.root.name)) {
         return id;
     }
@@ -119,6 +111,7 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
 function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourceId: string): IDiagramEdge[] {
     const references: IDiagramEdge[] = [];
     const sourceName = getName(sourceSymbol);
+    const source = `${sourceId}.${sourceName}`;
     walkChildren(sourceSymbol.valueDeclaration, (targetNode) => {
         if (targetNode.kind === ts.SyntaxKind.Identifier) {
             const ident = targetNode as ts.Identifier;
@@ -128,7 +121,6 @@ function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourc
                 return;
             }
             const target = getIdentifierId(ctx, ident);
-            const source = `${sourceId}.${sourceName}`;
             if (target) {
                 const fromTo = `${source}-${target}`;
                 if (fromTo in ctx.references) {
