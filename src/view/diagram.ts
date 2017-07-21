@@ -41,15 +41,42 @@ function coseLayout(): Cy.CoseLayoutOptions {
     } as Cy.CoseLayoutOptions;
     return layout;
 }
+function gridLayout(): Cy.GridLayoutOptions {
+    const layout = {
+        name: "grid",
+    } as Cy.GridLayoutOptions;
+    return layout;
+}
+function getNodes(cy: Cy.Core, filter: (n: Cy.NodeSingular) => boolean) {
+    return cy.nodes(filter as any);
+}
+function applyLayout(nodes: Cy.NodeCollection, layoutOptions: Cy.LayoutOptions) {
+    const layout = nodes.layout(layoutOptions) as any;
+    layout.run();
+}
 function run() {
+    const elements: Cy.ElementDefinition[] = JSON.parse($("#models").html());
     const cy = cytoscape({
         container: $("#cy"),
-        elements: JSON.parse($("#models").html()),
+        elements,
         autounselectify: true,
         boxSelectionEnabled: false,
         style: getStyle(),
-        layout: {name: "grid"} as Cy.GridLayoutOptions,
+        layout: {name: "null"} as Cy.NullLayoutOptions,
     });
+    const parentIds: {[parentId: string]: void} = {};
+    elements.map((e) => e.data["parent"]).filter((p) => p).forEach((p) => parentIds[p] = undefined);
+    for (const parentId of Object.keys(parentIds)) {
+        const children = getNodes(cy, (element: Cy.NodeSingular) => {
+            return parentId === element.data("parent");
+        });
+        applyLayout(children, gridLayout());
+    }
+    const parents = getNodes(cy, (element) => {
+        return !element.data("parent") || (element.id() in parentIds);
+    });
+    applyLayout(parents, gridLayout());
     // TODO more advanced layout here - select neighborhoods
 }
+// $("#cy").click(run);
 setTimeout(run, 0);
