@@ -1,8 +1,10 @@
 import * as ts from "typescript";
 import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./DiagramModel";
+import { NodeReferenceWalker } from "./NodeReferenceWalker";
 import { getSymbolProperties } from "./symboProperties";
 
 interface IReferencesContext {
+    program: ts.Program;
     root: ts.Symbol;
     typechecker: ts.TypeChecker;
     references: {[fromTo: string]: IDiagramEdge};
@@ -14,6 +16,7 @@ function getSymbolTable(fileName: string): IReferencesContext {
     const sourceFile = program.getSourceFile(fileName);
     const typechecker = program.getTypeChecker();
     return {
+        program,
         root: typechecker.getSymbolAtLocation(sourceFile),
         typechecker,
         references: {},
@@ -79,8 +82,9 @@ function walkChildren(node: ts.Node, visitor: (n: ts.Node) => void) {
 function prependFileToRootLocal(ctx: IReferencesContext, id: string, symbol: ts.Symbol): string {
     if (
         !symbol ||
-        !symbol.valueDeclaration ||
-        !symbol.valueDeclaration.parent
+        !symbol.declarations ||
+        !symbol.declarations.length ||
+        !symbol.declarations[0].parent
     ) {
         return "";
     }
@@ -93,7 +97,7 @@ function prependFileToRootLocal(ctx: IReferencesContext, id: string, symbol: ts.
 
 function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
     const symbol = ctx.typechecker.getSymbolAtLocation(identifier);
-    if (!symbol || !symbol.valueDeclaration) {
+    if (!symbol || !symbol.declarations || !symbol.declarations.length) {
         return null;
     }
     let id = ctx.typechecker.getFullyQualifiedName(symbol);
@@ -194,19 +198,35 @@ function inheritenceElement(
 
 function computeDiagram(
     ctx: IReferencesContext,
-    symbol: ts.Symbol,
+    fileSymbol: ts.Symbol,
     idPrefix: string = ctx.root.name,
 ): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
-    const symName = getName(symbol);
-    if (symbol.flags & ts.SymbolFlags.ValueModule) {
-        elements.push(...childReferences(ctx, symbol, idPrefix, symbol.name === ctx.root.name));
-    } else if (
-        symbol.flags & ts.SymbolFlags.ModuleMember
-        && symName
-    ) {
-        elements.push(...inheritenceElement(ctx, symbol, idPrefix, symName, symbol.name === ctx.root.name));
+
+    const walker = new NodeReferenceWalker(ctx.root.valueDeclaration as ts.SourceFile, ctx.typechecker);
+    walker.walk(walker.getSourceFile());
+    for (const {symbol, identifier} of walker.graphNodes) {
+        const id = getIdentifierId(ctx, identifier);
+        if (id) {
+            elements.push({
+                data: {
+                    id,
+                    name: identifier.text,
+                    ...getSymbolProperties(symbol),
+                },
+            });
+        }
     }
+
+    // const symName = getName(fileSymbol);
+    // if (fileSymbol.flags & ts.SymbolFlags.ValueModule) {
+    //     elements.push(...childReferences(ctx, fileSymbol, idPrefix, fileSymbol.name === ctx.root.name));
+    // } else if (
+    //     fileSymbol.flags & ts.SymbolFlags.ModuleMember
+    //     && symName
+    // ) {
+    //     elements.push(...inheritenceElement(ctx, fileSymbol, idPrefix, symName, fileSymbol.name === ctx.root.name));
+    // }
     return elements;
 }
 

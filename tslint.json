@@ -11,7 +11,10 @@
         ],
         "no-empty-interface": false,
         "no-bitwise": false,
-        "no-string-literal": false
+        "no-string-literal": false,
+        "max-line-length": [
+            false
+        ]
     },
     "rulesDirectory": []
 }
