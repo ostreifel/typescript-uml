@@ -29,6 +29,7 @@ function createLanguageService(fileName: string, source: string) {
 export interface IGraphNode {
     symbol: ts.Symbol;
     identifier: ts.Identifier;
+    highlights?: ts.HighlightSpan[];
 }
 
 export class NodeReferenceWalker extends Lint.SyntaxWalker {
@@ -284,11 +285,12 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         const fileName = this.sourceFile.fileName;
         const symbol = this.typechecker.getSymbolAtLocation(identifier);
         const highlights = this.languageService.getDocumentHighlights(fileName, position, [fileName]);
-        if (symbol/* && highlights && highlights[0].highlightSpans.length > 0*/) {
-            // TODO calculate references from highlights
-            // this.addFailure(this.createFailure(position, name.length, FAILURE_STRING_FACTORY(type, name)));
-            // add nodes and edges here.
-            this.graphNodes.push({symbol, identifier});
+        if (symbol) {
+            this.graphNodes.push({
+                symbol,
+                identifier,
+                highlights: highlights && highlights[0].highlightSpans || [],
+            });
         }
     }
 }
