@@ -47,6 +47,18 @@ function gridLayout(): Cy.GridLayoutOptions {
     } as Cy.GridLayoutOptions;
     return layout;
 }
+function concentricLayout(): Cy.ConcentricLayoutOptions {
+    const layout = {
+        name: "concentric",
+    } as Cy.ConcentricLayoutOptions;
+    return layout;
+}
+function circleLayout(): Cy.CircleLayoutOptions {
+    const layout = {
+        name: "circle",
+    } as Cy.CircleLayoutOptions;
+    return layout;
+}
 function getNodes(cy: Cy.Core, filter: (n: Cy.NodeSingular) => boolean) {
     return cy.nodes(filter as any);
 }
