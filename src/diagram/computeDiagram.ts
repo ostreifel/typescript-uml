@@ -11,7 +11,7 @@ interface IReferencesContext {
     nodes: {[id: string]: IDiagramNode};
 }
 
-function getSymbolTable(fileName: string): IReferencesContext {
+function getFileContext(fileName: string): IReferencesContext {
     const program = ts.createProgram([fileName], {});
     const sourceFile = program.getSourceFile(fileName);
     const typechecker = program.getTypeChecker();
@@ -22,61 +22,6 @@ function getSymbolTable(fileName: string): IReferencesContext {
         references: {},
         nodes: {},
     };
-}
-
-function getValues<T>(m: ts.Map<T>): T[] {
-    const values: T[] = [];
-    m.forEach((v, k) => {
-        values.push(v);
-    });
-    return values;
-}
-
-// tslint:disable-next-line:max-line-length
-// TODO use https://github.com/palantir/tslint/blob/0b477310d27ca478af87ec6b0fff8314294e629a/src/rules/noUnusedVariableRule.ts
-function childReferences(
-    ctx: IReferencesContext,
-    symbol: ts.Symbol,
-    idPrefix: string,
-    includeLocals?: boolean,
-): IDiagramElement[] {
-    const elements: IDiagramElement[] = [];
-    if (symbol.exports) {
-        getValues(symbol.exports).map((v) =>
-            elements.push(...computeDiagram(ctx, v, idPrefix)),
-        );
-    }
-    if (symbol.members) {
-        getValues(symbol.members).map((v) =>
-            elements.push(...computeDiagram(ctx, v, idPrefix)),
-        );
-    }
-    if (includeLocals && symbol.valueDeclaration && symbol.valueDeclaration["locals"]) {
-        getValues(symbol.valueDeclaration["locals"] as ts.Map<ts.Symbol>).map((v) => {
-            elements.push(...computeDiagram(ctx, v, idPrefix));
-            elements.push(...referencedNodes(ctx, v, idPrefix));
-        });
-    }
-    return elements;
-}
-
-function getName(sym: ts.Symbol): string | null {
-    if (!sym.declarations || !sym.declarations.length) {
-        return null;
-    }
-    const named: ts.NamedDeclaration = sym.declarations[0];
-    const ident: ts.Identifier = named.name as ts.Identifier;
-    return ident && ident.text || null;
-}
-
-function walkChildren(node: ts.Node, visitor: (n: ts.Node) => void) {
-    if (!node) {
-        return;
-    }
-    node.forEachChild((child) => {
-        visitor(child);
-        walkChildren(child, visitor);
-    });
 }
 
 function prependFileToRootLocal(ctx: IReferencesContext, id: string, symbol: ts.Symbol): string {
@@ -112,88 +57,23 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
     return null;
 }
 
-function referencedNodes(ctx: IReferencesContext, sourceSymbol: ts.Symbol, sourceId: string): IDiagramEdge[] {
-    const references: IDiagramEdge[] = [];
-    const sourceName = getName(sourceSymbol);
-    const source = `${sourceId}.${sourceName}`;
-    walkChildren(sourceSymbol.valueDeclaration, (targetNode) => {
-        if (targetNode.kind === ts.SyntaxKind.Identifier) {
-            const ident = targetNode as ts.Identifier;
-            const targetName = ident.text;
-            // TODO handle shadowed method names
-            if (targetName === sourceName) {
-                return;
-            }
-            const target = getIdentifierId(ctx, ident);
-            if (target) {
-                const fromTo = `${source}-${target}`;
-                if (fromTo in ctx.references) {
-                    ctx.references[fromTo].data.weight++;
-                } else {
-                    const edge: IDiagramEdge = {
-                        data: {
-                            source,
-                            target,
-                            weight : 1,
-                        },
-                    };
-                    references.push(edge);
-                    ctx.references[fromTo] = edge;
-                }
-            }
-        }
-    });
-    return references;
-}
-
-function inheritenceElement(
-    ctx: IReferencesContext,
-    symbol: ts.Symbol,
-    idPrefix: string,
-    name: string,
-    includeLocals: boolean,
-) {
-    const elements: IDiagramElement[] = [];
-    elements.push({
-        data: {
-            id: `${idPrefix}.${name}`,
-            name,
-            ...getSymbolProperties(symbol),
-        },
-    });
-    function pushSymbolTable(table: ts.Map<ts.Symbol>) {
-        getValues(table).map((v) => {
-            const vName = getName(v);
-            if (!vName) {
-                return;
-            }
-            elements.push(...[
-                {
-                    data: {
-                        id: `${idPrefix}.${name}.${vName}`,
-                        name: vName,
-                        parent: `${idPrefix}.${name}`,
-                        ...getSymbolProperties(v),
-                    },
-                },
-            ]);
-            elements.push(...referencedNodes(ctx, v, `${idPrefix}.${name}`));
-        });
-    }
-    if (symbol.exports) {
-        pushSymbolTable(symbol.exports);
-    }
-    if (symbol.members) {
-        pushSymbolTable(symbol.members);
-    }
+function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null {
     if (
-        includeLocals &&
-        symbol.valueDeclaration &&
-        symbol.valueDeclaration["locals"]
+        !symbol ||
+        !symbol.declarations ||
+        !symbol.declarations.length ||
+        !symbol.declarations[0].parent
     ) {
-        pushSymbolTable(symbol.valueDeclaration["locals"]);
+        return null;
     }
-    return elements;
+    const parentNode = symbol.declarations[0].parent as ts.NamedDeclaration;
+    if (
+        !parentNode.name ||
+        parentNode.name.kind !== ts.SyntaxKind.Identifier
+    ) {
+        return null;
+    }
+    return getIdentifierId(ctx, parentNode.name);
 }
 
 function computeDiagram(
@@ -212,25 +92,16 @@ function computeDiagram(
                 data: {
                     id,
                     name: identifier.text,
+                    parent: getParentId(ctx, symbol),
                     ...getSymbolProperties(symbol),
                 },
             });
         }
     }
-
-    // const symName = getName(fileSymbol);
-    // if (fileSymbol.flags & ts.SymbolFlags.ValueModule) {
-    //     elements.push(...childReferences(ctx, fileSymbol, idPrefix, fileSymbol.name === ctx.root.name));
-    // } else if (
-    //     fileSymbol.flags & ts.SymbolFlags.ModuleMember
-    //     && symName
-    // ) {
-    //     elements.push(...inheritenceElement(ctx, fileSymbol, idPrefix, symName, fileSymbol.name === ctx.root.name));
-    // }
     return elements;
 }
 
 export function computeDiagramForFile(fileName: string): IDiagramElement[] {
-    const ctx: IReferencesContext = getSymbolTable(fileName);
+    const ctx: IReferencesContext = getFileContext(fileName);
     return computeDiagram(ctx, ctx.root);
 }
