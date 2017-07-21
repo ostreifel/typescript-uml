@@ -204,7 +204,7 @@ function computeDiagram(
     const elements: IDiagramElement[] = [];
 
     const walker = new NodeReferenceWalker(ctx.root.valueDeclaration as ts.SourceFile, ctx.typechecker);
-    walker.walk(walker.getSourceFile());
+    walker.walk(walker.sourceFile);
     for (const {symbol, identifier} of walker.graphNodes) {
         const id = getIdentifierId(ctx, identifier);
         if (id) {

@@ -31,7 +31,7 @@ export interface IGraphNode {
     identifier: ts.Identifier;
 }
 
-export class NodeReferenceWalker extends Lint.RuleWalker {
+export class NodeReferenceWalker extends Lint.SyntaxWalker {
     public readonly graphNodes: IGraphNode[] = [];
 
     private skipBindingElement: boolean;
@@ -45,8 +45,8 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
 
     private readonly languageService: ts.LanguageService;
 
-    constructor(sourceFile: ts.SourceFile, private readonly typechecker: ts.TypeChecker) {
-        super(sourceFile, {ruleArguments: [] as any[], ruleSeverity: "off", ruleName: "ReferenceCount", disabledIntervals: []});
+    constructor( readonly sourceFile: ts.SourceFile, private readonly typechecker: ts.TypeChecker) {
+        super();
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
     }
 
@@ -88,7 +88,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
 
         if (isSingleVariable && !this.skipBindingElement) {
             const variableIdentifier = node.name as ts.Identifier;
-            this.validateReferencesForVariable(variableIdentifier, variableIdentifier.text, variableIdentifier.getStart());
+            this.validateReferencesForVariable(variableIdentifier);
         }
 
         super.visitBindingElement(node);
@@ -100,12 +100,8 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
         this.visitBlock(node.block);
     }
 
-    // skip exported and declared functions
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        // if (!Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword, ts.SyntaxKind.DeclareKeyword)) {
-        const variableName = node.name.text;
-        this.validateReferencesForVariable(node.name, variableName, node.name.getStart());
-        // }
+        this.validateReferencesForVariable(node.name);
 
         super.visitFunctionDeclaration(node);
     }
@@ -124,7 +120,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
             // importClause will be null for bare imports
             if (importClause != null && importClause.name != null) {
                 const variableIdentifier = importClause.name;
-                this.validateReferencesForVariable(importClause.name, variableIdentifier.text, variableIdentifier.getStart());
+                this.validateReferencesForVariable(importClause.name);
             }
         }
 
@@ -134,7 +130,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
     public visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
         if (!Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword)) {
             const name = node.name;
-            this.validateReferencesForVariable(name, name.text, name.getStart());
+            this.validateReferencesForVariable(name);
         }
         super.visitImportEqualsDeclaration(node);
     }
@@ -149,6 +145,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
     // skip parameters in interfaces
     public visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
         this.skipParameterDeclaration = true;
+        this.validateReferencesForVariable(node.name);
         super.visitInterfaceDeclaration(node);
         this.skipParameterDeclaration = false;
     }
@@ -163,15 +160,12 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
         super.visitJsxSelfClosingElement(node);
     }
 
-    // check private member functions
     public visitMethodDeclaration(node: ts.MethodDeclaration) {
         if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
             const modifiers = node.modifiers;
             const variableName = (node.name as ts.Identifier).text;
 
-            if (Lint.hasModifier(modifiers, ts.SyntaxKind.PrivateKeyword)) {
-                this.validateReferencesForVariable(node.name, variableName, node.name.getStart());
-            }
+            this.validateReferencesForVariable(node.name);
         }
 
         // abstract methods can't have a body so their parameters are always unused
@@ -184,7 +178,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
 
     public visitNamedImports(node: ts.NamedImports) {
         for (const namedImport of node.elements) {
-            this.validateReferencesForVariable(namedImport.name, namedImport.name.text, namedImport.name.getStart());
+            this.validateReferencesForVariable(namedImport.name);
         }
         super.visitNamedImports(node);
     }
@@ -197,16 +191,16 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
         const moduleNameMatch = moduleSpecifier.match(MODULE_SPECIFIER_MATCH);
         const isReactImport = (moduleNameMatch != null) && (REACT_MODULES.indexOf(moduleNameMatch[1]) !== -1);
 
-        if (this.hasOption(OPTION_REACT) && isReactImport && node.name.text === REACT_NAMESPACE_IMPORT_NAME) {
+        if (isReactImport && node.name.text === REACT_NAMESPACE_IMPORT_NAME) {
             this.reactImport = node;
-            const fileName = this.getSourceFile().fileName;
+            const fileName = this.sourceFile.fileName;
             const position = node.name.getStart();
             const highlights = this.languageService.getDocumentHighlights(fileName, position, [fileName]);
             if (highlights != null && highlights[0].highlightSpans.length > 1) {
                 this.isReactUsed = true;
             }
         } else {
-            this.validateReferencesForVariable(node.name, node.name.text, node.name.getStart());
+            this.validateReferencesForVariable(node.name);
         }
         super.visitNamespaceImport(node);
     }
@@ -230,7 +224,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
                 && !this.skipParameterDeclaration
                 && !Lint.hasModifier(node.modifiers, ts.SyntaxKind.PublicKeyword)) {
             const nameNode = node.name as ts.Identifier;
-            this.validateReferencesForVariable(nameNode, nameNode.text, node.name.getStart());
+            this.validateReferencesForVariable(nameNode);
         }
 
         super.visitParameterDeclaration(node);
@@ -239,17 +233,25 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
 
     // check private member variables
     public visitPropertyDeclaration(node: ts.PropertyDeclaration) {
-        if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
+        if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
             const modifiers = node.modifiers;
             const variableName = (node.name as ts.Identifier).text;
 
-            // check only if an explicit 'private' modifier is specified
-            if (Lint.hasModifier(modifiers, ts.SyntaxKind.PrivateKeyword)) {
-                this.validateReferencesForVariable(node.name, variableName, node.name.getStart());
-            }
+            this.validateReferencesForVariable(node.name);
         }
 
         super.visitPropertyDeclaration(node);
+    }
+    public visitPropertySignature(node: ts.PropertySignature) {
+        if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
+            this.validateReferencesForVariable(node.name as ts.Identifier);
+        }
+        super.visitPropertySignature(node);
+    }
+
+    public visitClassDeclaration(node: ts.ClassDeclaration): void {
+        this.validateReferencesForVariable(node.name);
+        super.visitClassDeclaration(node);
     }
 
     public visitVariableDeclaration(node: ts.VariableDeclaration) {
@@ -257,7 +259,7 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
 
         if (isSingleVariable && !this.skipVariableDeclaration) {
             const variableIdentifier = node.name as ts.Identifier;
-            this.validateReferencesForVariable(variableIdentifier, variableIdentifier.text, variableIdentifier.getStart());
+            this.validateReferencesForVariable(variableIdentifier);
         }
 
         super.visitVariableDeclaration(node);
@@ -275,11 +277,14 @@ export class NodeReferenceWalker extends Lint.RuleWalker {
         this.skipVariableDeclaration = false;
     }
 
-    private validateReferencesForVariable(identifier: ts.Identifier, name: string, position: number) {
-        const fileName = this.getSourceFile().fileName;
+    private validateReferencesForVariable(identifier: ts.Identifier) {
+        const name = identifier.text;
+        const position = identifier.pos;
+
+        const fileName = this.sourceFile.fileName;
         const symbol = this.typechecker.getSymbolAtLocation(identifier);
         const highlights = this.languageService.getDocumentHighlights(fileName, position, [fileName]);
-        if (symbol && highlights && highlights[0].highlightSpans.length > 0) {
+        if (symbol/* && highlights && highlights[0].highlightSpans.length > 0*/) {
             // TODO calculate references from highlights
             // this.addFailure(this.createFailure(position, name.length, FAILURE_STRING_FACTORY(type, name)));
             // add nodes and edges here.
