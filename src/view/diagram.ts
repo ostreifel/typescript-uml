@@ -10,7 +10,7 @@ function getStyle(): any {
             "content": "data(name)",
             "text-outline-color": "black",
             "text-outline-width": 2,
-            "text-valign": "center",
+            "text-valign": "data(valign)",
         })
         .selector("edge")
         .css({
@@ -82,7 +82,7 @@ function run() {
         const children = getNodes(cy, (element: Cy.NodeSingular) => {
             return parentId === element.data("parent");
         });
-        applyLayout(children, circleLayout());
+        applyLayout(children, circleLayout  ());
     }
     const parents = getNodes(cy, (element) => {
         return !element.data("parent") || (element.id() in parentIds);

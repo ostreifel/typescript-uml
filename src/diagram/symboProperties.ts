@@ -42,9 +42,21 @@ function getShape(symbol: ts.Symbol): Cy.Css.NodeShape {
     return "ellipse";
 }
 
+function getValign(symbol: ts.Symbol): "top" | "center" | "bottom" {
+    if (
+        symbol.flags & ts.SymbolFlags.Class ||
+        symbol.flags & ts.SymbolFlags.Enum ||
+        symbol.flags & ts.SymbolFlags.Interface
+    ) {
+        return "top";
+    }
+    return "center";
+}
+
 export function getSymbolProperties(symbol: ts.Symbol) {
     return {
         color: getColor(symbol),
         shape: getShape(symbol),
+        valign: getValign(symbol),
     };
 }
