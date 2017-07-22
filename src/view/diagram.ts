@@ -33,31 +33,37 @@ function getStyle(): any {
             "text-opacity": 0,
         });
 }
-function coseLayout(): Cy.CoseLayoutOptions {
-    const layout = {
-        name: "cose",
-        numIter: 10000,
-        randomize: false,
-    } as Cy.CoseLayoutOptions;
-    return layout;
-}
-function gridLayout(): Cy.GridLayoutOptions {
-    const layout = {
-        name: "grid",
-    } as Cy.GridLayoutOptions;
-    return layout;
-}
-function concentricLayout(): Cy.ConcentricLayoutOptions {
-    const layout = {
-        name: "concentric",
-    } as Cy.ConcentricLayoutOptions;
-    return layout;
-}
-function circleLayout(): Cy.CircleLayoutOptions {
-    const layout = {
-        name: "circle",
-    } as Cy.CircleLayoutOptions;
-    return layout;
+
+class Layouts {
+    public static coseLayout(): Cy.CoseLayoutOptions {
+        const layout = {
+            name: "cose",
+            numIter: 10000,
+            randomize: false,
+        } as Cy.CoseLayoutOptions;
+        return layout;
+    }
+
+    public static gridLayout(): Cy.GridLayoutOptions {
+        const layout = {
+            name: "grid",
+        } as Cy.GridLayoutOptions;
+        return layout;
+    }
+
+    public static concentricLayout(): Cy.ConcentricLayoutOptions {
+        const layout = {
+            name: "concentric",
+        } as Cy.ConcentricLayoutOptions;
+        return layout;
+    }
+
+    public static circleLayout(): Cy.CircleLayoutOptions {
+        const layout = {
+            name: "circle",
+        } as Cy.CircleLayoutOptions;
+        return layout;
+    }
 }
 function getNodes(cy: Cy.Core, filter: (n: Cy.NodeSingular) => boolean) {
     return cy.nodes(filter as any);
@@ -82,13 +88,12 @@ function run() {
         const children = getNodes(cy, (element: Cy.NodeSingular) => {
             return parentId === element.data("parent");
         });
-        applyLayout(children, gridLayout());
+        applyLayout(children, Layouts.gridLayout());
     }
     const parents = getNodes(cy, (element) => {
         return !element.data("parent") || (element.id() in parentIds);
     });
-    applyLayout(parents, gridLayout());
+    applyLayout(parents, Layouts.gridLayout());
     // TODO more advanced layout here - select neighborhoods
 }
-// $("#cy").click(run);
 setTimeout(run, 0);

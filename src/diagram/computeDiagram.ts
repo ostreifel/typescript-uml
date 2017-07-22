@@ -4,8 +4,7 @@ import { IGraphNode, NodeReferenceWalker } from "./NodeReferenceWalker";
 import { getSymbolProperties } from "./symboProperties";
 
 interface IReferencesContext {
-    program: ts.Program;
-    root: ts.Symbol;
+    sourceFile: ts.SourceFile;
     typechecker: ts.TypeChecker;
     references: {[fromTo: string]: IDiagramEdge};
     nodes: {[id: string]: IDiagramNode};
@@ -16,28 +15,27 @@ function getFileContext(fileName: string): IReferencesContext {
     const sourceFile = program.getSourceFile(fileName);
     const typechecker = program.getTypeChecker();
     return {
-        program,
-        root: typechecker.getSymbolAtLocation(sourceFile),
+        sourceFile,
         typechecker,
         references: {},
         nodes: {},
     };
 }
 
-function prependFileToRootLocal(ctx: IReferencesContext, id: string, symbol: ts.Symbol): string {
-    if (
-        !symbol ||
-        !symbol.declarations ||
-        !symbol.declarations.length ||
-        !symbol.declarations[0].parent
-    ) {
-        return "";
+function isLocal(parent: ts.Node, child: ts.NamedDeclaration) {
+    const locals: ts.Map<ts.Symbol> = parent["locals"];
+    if (!locals || !child.name || child.name.kind !== ts.SyntaxKind.Identifier) {
+        return false;
     }
-    const rootLocals: ts.Map<ts.Symbol> = ctx.root.valueDeclaration["locals"];
-    if (rootLocals && !rootLocals.has(id.split(".")[0])) {
-        return "";
+    if (!locals.has(child.name.text)) {
+        return false;
     }
-    return `${ctx.root.name}.${id}`;
+    const candidateLocal = locals.get(child.name.text);
+    if (!candidateLocal.declarations || !candidateLocal.declarations.length) {
+        return false;
+    }
+    const candidateNode = candidateLocal.declarations[0];
+    return candidateNode.pos === child.pos && candidateNode.end === child.end;
 }
 
 function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
@@ -45,15 +43,23 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
     if (!symbol || !symbol.declarations || !symbol.declarations.length) {
         return null;
     }
-    let id = ctx.typechecker.getFullyQualifiedName(symbol);
-    if (id.startsWith(ctx.root.name)) {
-        return id;
+    let currNode = symbol.declarations[0] as ts.NamedDeclaration;
+    const idParts: string[] = [];
+    while (currNode) {
+        if (isLocal(ctx.sourceFile, currNode)) {
+            idParts.unshift(currNode.name.getText());
+            idParts.unshift(ctx.sourceFile.fileName);
+            return idParts.join(".");
+        } else if (currNode.pos === ctx.sourceFile.pos && currNode.end === ctx.sourceFile.end) {
+            idParts.unshift(ctx.sourceFile.fileName);
+            return idParts.join(".");
+        } else if (currNode.name && currNode.name.kind === ts.SyntaxKind.Identifier) {
+            idParts.unshift(currNode.name.text);
+        } else {
+            break;
+        }
+        currNode = currNode.parent as ts.NamedDeclaration;
     }
-    id = prependFileToRootLocal(ctx, id, symbol);
-    if (id.startsWith(ctx.root.name)) {
-        return id;
-    }
-
     return null;
 }
 
@@ -137,7 +143,7 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
             if (!referencingNode) {
                 continue;
             }
-            const edge = createEdge(ctx, graphNode.symbol, referencingNode.symbol);
+            const edge = createEdge(ctx, referencingNode.symbol, graphNode.symbol);
             if (edge) {
                 if (edge.data.id in ctx.references) {
                     ctx.references[edge.data.id].data.weight++;
@@ -153,12 +159,10 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
 
 function computeDiagram(
     ctx: IReferencesContext,
-    fileSymbol: ts.Symbol,
-    idPrefix: string = ctx.root.name,
 ): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
 
-    const walker = new NodeReferenceWalker(ctx.root.valueDeclaration as ts.SourceFile, ctx.typechecker);
+    const walker = new NodeReferenceWalker(ctx.sourceFile as ts.SourceFile, ctx.typechecker);
     walker.walk(walker.sourceFile);
     const validNodes: IGraphNode[] = [];
     // Add nodes
@@ -182,5 +186,5 @@ function computeDiagram(
 
 export function computeDiagramForFile(fileName: string): IDiagramElement[] {
     const ctx: IReferencesContext = getFileContext(fileName);
-    return computeDiagram(ctx, ctx.root);
+    return computeDiagram(ctx);
 }
