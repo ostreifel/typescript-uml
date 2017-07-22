@@ -63,7 +63,7 @@ function getNodes(cy: Cy.Core, filter: (n: Cy.NodeSingular) => boolean) {
     return cy.nodes(filter as any);
 }
 function applyLayout(nodes: Cy.NodeCollection, layoutOptions: Cy.LayoutOptions) {
-    const layout = nodes.layout(layoutOptions) as any;
+    const layout: Cy.Layouts = nodes.layout(layoutOptions) as any;
     layout.run();
 }
 function run() {
@@ -82,7 +82,7 @@ function run() {
         const children = getNodes(cy, (element: Cy.NodeSingular) => {
             return parentId === element.data("parent");
         });
-        applyLayout(children, circleLayout  ());
+        applyLayout(children, gridLayout());
     }
     const parents = getNodes(cy, (element) => {
         return !element.data("parent") || (element.id() in parentIds);
