@@ -113,7 +113,7 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): ID
 
     const fromId = getIdentifierId(ctx, fromIdent);
     const toId = getIdentifierId(ctx, toIdent);
-    if (!fromId || !toId) {
+    if (!fromId || !toId || fromId === toId) {
         return null;
     }
     return {
@@ -129,22 +129,23 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): ID
 function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEdge[] {
     const edges: IDiagramEdge[] = [];
     for (const graphNode of graphNodes) {
-        for (const reference of graphNode.references) {
-            // tslint:disable-next-line:no-unused-expression
-            reference;
-            // const referencingNode = getGraphNodeContainingPos(graphNodes, reference.);
-            // if (!referencingNode) {
-            //     continue;
-            // }
-            // const edge = createEdge(ctx, graphNode.symbol, referencingNode.symbol);
-            // if (edge) {
-            //     if (edge.data.id in ctx.references) {
-            //         ctx.references[edge.data.id].data.weight++;
-            //     } else {
-            //         ctx.references[edge.data.id] = edge;
-            //         edges.push(edge);
-            //     }
-            // }
+        if (!graphNode.references || !graphNode.references.length) {
+            continue;
+        }
+        for (const reference of graphNode.references[0].references) {
+            const referencingNode = getGraphNodeContainingPos(graphNodes, reference.textSpan.start);
+            if (!referencingNode) {
+                continue;
+            }
+            const edge = createEdge(ctx, graphNode.symbol, referencingNode.symbol);
+            if (edge) {
+                if (edge.data.id in ctx.references) {
+                    ctx.references[edge.data.id].data.weight++;
+                } else {
+                    ctx.references[edge.data.id] = edge;
+                    edges.push(edge);
+                }
+            }
         }
     }
     return edges;

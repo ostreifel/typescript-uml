@@ -1,7 +1,6 @@
 import * as Lint from "tslint/lib/index";
 import * as ts from "typescript";
 
-const OPTION_REACT = "react";
 const CHECK_PARAMETERS: boolean = false;
 
 const REACT_MODULES = ["react", "react/addons"];
@@ -40,7 +39,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     private skipVariableDeclaration: boolean = false;
 
     private hasSeenJsxElement: boolean = false;
-    private ignorePattern: RegExp;
     private isReactUsed: boolean = false;
     private reactImport: ts.NamespaceImport;
 
@@ -280,10 +278,11 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private validateReferencesForVariable(identifier: ts.Identifier) {
         const name = identifier.text;
-        const position = identifier.end;
+        const position = identifier.getStart();
 
         const fileName = this.sourceFile.fileName;
         const symbol = this.typechecker.getSymbolAtLocation(identifier);
+        // this.languageService.getDocumentHighlights(fileName, position, [fileName]);
         const references = this.languageService.findReferences(fileName, position);
         if (symbol) {
             this.graphNodes.push({
