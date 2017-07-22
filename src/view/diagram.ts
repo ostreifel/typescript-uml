@@ -82,7 +82,7 @@ function run() {
         const children = getNodes(cy, (element: Cy.NodeSingular) => {
             return parentId === element.data("parent");
         });
-        applyLayout(children, gridLayout());
+        applyLayout(children, circleLayout());
     }
     const parents = getNodes(cy, (element) => {
         return !element.data("parent") || (element.id() in parentIds);

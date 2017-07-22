@@ -29,7 +29,7 @@ function createLanguageService(fileName: string, source: string) {
 export interface IGraphNode {
     symbol: ts.Symbol;
     identifier: ts.Identifier;
-    highlights?: ts.HighlightSpan[];
+    references: ts.ReferencedSymbol[];
 }
 
 export class NodeReferenceWalker extends Lint.SyntaxWalker {
@@ -280,16 +280,16 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private validateReferencesForVariable(identifier: ts.Identifier) {
         const name = identifier.text;
-        const position = identifier.pos;
+        const position = identifier.end;
 
         const fileName = this.sourceFile.fileName;
         const symbol = this.typechecker.getSymbolAtLocation(identifier);
-        const highlights = this.languageService.getDocumentHighlights(fileName, position, [fileName]);
+        const references = this.languageService.findReferences(fileName, position);
         if (symbol) {
             this.graphNodes.push({
                 symbol,
                 identifier,
-                highlights: highlights && highlights[0].highlightSpans || [],
+                references,
             });
         }
     }

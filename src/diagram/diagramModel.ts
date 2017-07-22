@@ -9,6 +9,7 @@ export interface IDiagramNode extends IDiagramElement {
 
 export interface IDiagramEdge extends IDiagramElement {
     data: {
+        id: string;
         source: string;
         target: string;
         weight: number;

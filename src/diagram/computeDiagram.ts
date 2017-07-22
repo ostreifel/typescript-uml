@@ -77,13 +77,17 @@ function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
 }
 
 function getGraphNodeContainingPos(graphNodes: IGraphNode[], pos: number): IGraphNode | null {
+    let currNode: IGraphNode | null = null;
+    let currNodeLength: number = Infinity;
     for (const graphNode of graphNodes) {
         const node = graphNode.symbol.declarations[0];
-        if (node.pos <= pos && node.end > pos) {
-            return graphNode;
+        const nodeLength = node.end - node.pos;
+        if (node.pos <= pos && node.end > pos && currNodeLength > nodeLength) {
+            currNode = graphNode;
+            currNodeLength = nodeLength;
         }
     }
-    return null;
+    return currNode;
 }
 
 function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): IDiagramEdge | null {
@@ -114,6 +118,7 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): ID
     }
     return {
         data: {
+            id: `${fromId}-${toId}`,
             source: fromId,
             target: toId,
             weight: 1,
@@ -124,15 +129,22 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): ID
 function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEdge[] {
     const edges: IDiagramEdge[] = [];
     for (const graphNode of graphNodes) {
-        for (const {kind, textSpan} of graphNode.highlights) {
-            const referencingNode = getGraphNodeContainingPos(graphNodes, textSpan.start);
-            if (!referencingNode) {
-                continue;
-            }
-            const edge = createEdge(ctx, graphNode.symbol, referencingNode.symbol);
-            if (edge) {
-                edges.push(edge);
-            }
+        for (const reference of graphNode.references) {
+            // tslint:disable-next-line:no-unused-expression
+            reference;
+            // const referencingNode = getGraphNodeContainingPos(graphNodes, reference.);
+            // if (!referencingNode) {
+            //     continue;
+            // }
+            // const edge = createEdge(ctx, graphNode.symbol, referencingNode.symbol);
+            // if (edge) {
+            //     if (edge.data.id in ctx.references) {
+            //         ctx.references[edge.data.id].data.weight++;
+            //     } else {
+            //         ctx.references[edge.data.id] = edge;
+            //         edges.push(edge);
+            //     }
+            // }
         }
     }
     return edges;
