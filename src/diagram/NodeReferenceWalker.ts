@@ -54,7 +54,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
         if (isSingleVariable && !this.skipBindingElement) {
             const variableIdentifier = node.name as ts.Identifier;
-            this.validateReferencesForVariable(variableIdentifier);
+            this.storeIdentifierReference(variableIdentifier);
         }
 
         super.visitBindingElement(node);
@@ -67,7 +67,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        this.validateReferencesForVariable(node.name);
+        this.storeIdentifierReference(node.name);
 
         super.visitFunctionDeclaration(node);
     }
@@ -86,7 +86,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
             // importClause will be null for bare imports
             if (importClause != null && importClause.name != null) {
                 const variableIdentifier = importClause.name;
-                this.validateReferencesForVariable(importClause.name);
+                this.storeIdentifierReference(importClause.name);
             }
         }
 
@@ -96,7 +96,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     public visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
         if (!Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword)) {
             const name = node.name;
-            this.validateReferencesForVariable(name);
+            this.storeIdentifierReference(name);
         }
         super.visitImportEqualsDeclaration(node);
     }
@@ -111,7 +111,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     // skip parameters in interfaces
     public visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
         this.skipParameterDeclaration = true;
-        this.validateReferencesForVariable(node.name);
+        this.storeIdentifierReference(node.name);
         super.visitInterfaceDeclaration(node);
         this.skipParameterDeclaration = false;
     }
@@ -131,7 +131,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
             const modifiers = node.modifiers;
             const variableName = (node.name as ts.Identifier).text;
 
-            this.validateReferencesForVariable(node.name);
+            this.storeIdentifierReference(node.name);
         }
 
         // abstract methods can't have a body so their parameters are always unused
@@ -142,9 +142,16 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.skipParameterDeclaration = false;
     }
 
+    public visitModuleDeclaration(node: ts.ModuleDeclaration): void {
+        if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
+            this.storeIdentifierReference(node.name);
+        }
+        super.visitModuleDeclaration(node);
+    }
+
     public visitNamedImports(node: ts.NamedImports) {
         for (const namedImport of node.elements) {
-            this.validateReferencesForVariable(namedImport.name);
+            this.storeIdentifierReference(namedImport.name);
         }
         super.visitNamedImports(node);
     }
@@ -166,7 +173,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
                 this.isReactUsed = true;
             }
         } else {
-            this.validateReferencesForVariable(node.name);
+            this.storeIdentifierReference(node.name);
         }
         super.visitNamespaceImport(node);
     }
@@ -190,7 +197,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
                 && !this.skipParameterDeclaration
                 && !Lint.hasModifier(node.modifiers, ts.SyntaxKind.PublicKeyword)) {
             const nameNode = node.name as ts.Identifier;
-            this.validateReferencesForVariable(nameNode);
+            this.storeIdentifierReference(nameNode);
         }
 
         super.visitParameterDeclaration(node);
@@ -203,20 +210,20 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
             const modifiers = node.modifiers;
             const variableName = (node.name as ts.Identifier).text;
 
-            this.validateReferencesForVariable(node.name);
+            this.storeIdentifierReference(node.name);
         }
 
         super.visitPropertyDeclaration(node);
     }
     public visitPropertySignature(node: ts.PropertySignature) {
         if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
-            this.validateReferencesForVariable(node.name as ts.Identifier);
+            this.storeIdentifierReference(node.name as ts.Identifier);
         }
         super.visitPropertySignature(node);
     }
 
     public visitClassDeclaration(node: ts.ClassDeclaration): void {
-        this.validateReferencesForVariable(node.name);
+        this.storeIdentifierReference(node.name);
         super.visitClassDeclaration(node);
     }
 
@@ -225,7 +232,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
         if (isSingleVariable && !this.skipVariableDeclaration) {
             const variableIdentifier = node.name as ts.Identifier;
-            this.validateReferencesForVariable(variableIdentifier);
+            this.storeIdentifierReference(variableIdentifier);
         }
 
         super.visitVariableDeclaration(node);
@@ -243,7 +250,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.skipVariableDeclaration = false;
     }
 
-    private validateReferencesForVariable(identifier: ts.Identifier) {
+    private storeIdentifierReference(identifier: ts.Identifier) {
         const name = identifier.text;
         const position = identifier.getStart();
 

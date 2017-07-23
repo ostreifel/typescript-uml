@@ -130,9 +130,8 @@ class BoxGridLayout {
     }
 }
 
-// tslint:disable-next-line:max-classes-per-file
-class Layouts {
-    public static coseLayout(): Cy.CoseLayoutOptions {
+namespace Layouts {
+    export function coseLayout(): Cy.CoseLayoutOptions {
         const layout = {
             name: "cose",
             numIter: 10000,
@@ -141,21 +140,21 @@ class Layouts {
         return layout;
     }
 
-    public static gridLayout(): Cy.GridLayoutOptions {
+    export function gridLayout(): Cy.GridLayoutOptions {
         const layout = {
             name: "grid",
         } as Cy.GridLayoutOptions;
         return layout;
     }
 
-    public static concentricLayout(): Cy.ConcentricLayoutOptions {
+    export function concentricLayout(): Cy.ConcentricLayoutOptions {
         const layout = {
             name: "concentric",
         } as Cy.ConcentricLayoutOptions;
         return layout;
     }
 
-    public static circleLayout(): Cy.CircleLayoutOptions {
+    export function circleLayout(): Cy.CircleLayoutOptions {
         const layout = {
             name: "circle",
         } as Cy.CircleLayoutOptions;
