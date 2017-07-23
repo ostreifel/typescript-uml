@@ -44,42 +44,9 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private readonly languageService: ts.LanguageService;
 
-    constructor( readonly sourceFile: ts.SourceFile, private readonly typechecker: ts.TypeChecker) {
+    constructor(readonly sourceFile: ts.SourceFile, private readonly typechecker: ts.TypeChecker) {
         super();
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
-    }
-
-    public visitSourceFile(node: ts.SourceFile) {
-        super.visitSourceFile(node);
-
-        /*
-         * After super.visitSourceFile() is completed, this.reactImport will be set to a NamespaceImport iff:
-         *
-         * - a react option has been provided to the rule and
-         * - an import of a module that matches one of OPTION_REACT_MODULES is found, to a
-         *   NamespaceImport named OPTION_REACT_NAMESPACE_IMPORT_NAME
-         *
-         * e.g.
-         *
-         * import * as React from "react/addons";
-         *
-         * If reactImport is defined when a walk is completed, we need to have:
-         *
-         * a) seen another usage of React and/or
-         * b) seen a JSX identifier
-         *
-         * otherwise a a variable usage failure will will be reported
-         */
-        if (
-            this.reactImport != null &&
-            !this.isReactUsed &&
-            !this.hasSeenJsxElement
-        ) {
-            const nameText = this.reactImport.name.getText();
-            const start = this.reactImport.name.getStart();
-            // const msg = FAILURE_STRING_FACTORY(FAILURE_TYPE_IMPORT, nameText);
-            // this.addFailure(this.createFailure(start, nameText.length, msg));
-        }
     }
 
     public visitBindingElement(node: ts.BindingElement) {
