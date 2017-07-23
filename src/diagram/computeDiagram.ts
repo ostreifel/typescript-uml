@@ -1,7 +1,7 @@
 import * as ts from "typescript";
 import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./DiagramModel";
 import { IGraphNode, NodeReferenceWalker } from "./NodeReferenceWalker";
-import { getSymbolProperties } from "./symboProperties";
+import { getSymbolProperties } from "./symbolProperties";
 
 interface IReferencesContext {
     sourceFile: ts.SourceFile;
@@ -55,8 +55,8 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
             return idParts.join(".");
         } else if (currNode.name && currNode.name.kind === ts.SyntaxKind.Identifier) {
             idParts.unshift(currNode.name.text);
-        } else {
-            break;
+        // } else if (currNode.kind === ts.SyntaxKind.Block) {
+        //     break;
         }
         currNode = currNode.parent as ts.NamedDeclaration;
     }
@@ -72,14 +72,15 @@ function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
     ) {
         return null;
     }
-    const parentNode = symbol.declarations[0].parent as ts.NamedDeclaration;
-    if (
-        !parentNode.name ||
-        parentNode.name.kind !== ts.SyntaxKind.Identifier
+    let parentNode = symbol.declarations[0].parent as ts.NamedDeclaration;
+    while (
+        parentNode &&
+        (!parentNode.name ||
+        parentNode.name.kind !== ts.SyntaxKind.Identifier)
     ) {
-        return null;
+        parentNode = parentNode.parent as ts.NamedDeclaration;
     }
-    return getIdentifierId(ctx, parentNode.name);
+    return parentNode && getIdentifierId(ctx, parentNode.name as ts.Identifier);
 }
 
 function getGraphNodeContainingPos(graphNodes: IGraphNode[], pos: number): IGraphNode | null {
@@ -162,7 +163,7 @@ function computeDiagram(
 ): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
 
-    const walker = new NodeReferenceWalker(ctx.sourceFile as ts.SourceFile, ctx.typechecker);
+    const walker = new NodeReferenceWalker(ctx.sourceFile, ctx.typechecker);
     walker.walk(walker.sourceFile);
     const validNodes: IGraphNode[] = [];
     // Add nodes

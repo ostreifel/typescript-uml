@@ -1,20 +1,16 @@
 <html>
 
 <head>
-    <style>
-        #cy {
-            width: 100%;
-            height: 100vh;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="${rootPath}/html/diagram.css"></link>
 </head>
-
 <body>
     <div style="display: none" id="models">${models}</div>
     <div id="cy"></div>
+    <div class="element-info" hidden></div>
     <script src="${rootPath}/node_modules/cytoscape/dist/cytoscape.js"></script>
     <script src="${rootPath}/node_modules/jquery/dist/jquery.min.js"></script>
     <script src="${rootPath}/out/src/view/diagram.js"></script>
+    <style src="${rootPath}/html/diagram.css"></style>
 </body>
 
 </html>

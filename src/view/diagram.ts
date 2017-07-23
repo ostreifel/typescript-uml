@@ -11,6 +11,10 @@ function getStyle(): any {
             "text-outline-color": "black",
             "text-outline-width": 2,
             "text-valign": "data(valign)",
+            "border-color": "black",
+            "border-opacity": "1",
+            "border-width": "1",
+            "border-style": "solid",
         })
         .selector("edge")
         .css({
@@ -22,10 +26,14 @@ function getStyle(): any {
         })
         .selector(":selected")
         .css({
-            "background-color": "black",
-            "line-color": "black",
-            "source-arrow-color": "black",
-            "target-arrow-color": "black",
+            // "background-color": "black",
+            "line-color": "red",
+            "source-arrow-color": "red",
+            "target-arrow-color": "red",
+            "border-color": "white",
+            "border-opacity": "1",
+            "border-width": "5",
+            "border-style": "solid",
         })
         .selector(".faded")
         .css({
@@ -161,6 +169,27 @@ namespace Layouts {
         return layout;
     }
 }
+namespace NodeInfo {
+    const infoElement = $(".element-info");
+    export function update(e: Cy.EventObject) {
+        const node: Cy.NodeCollection = e.target;
+
+        if ((e.type as Cy.CollectionEventName) === "select" && node.nonempty() && node.isNode()) {
+            show(node);
+        } else {
+            hide();
+        }
+    }
+    function show(node: Cy.NodeSingular) {
+        const name = node.data("name");
+        infoElement.append($("<div>").text(name));
+        infoElement.show();
+    }
+    function hide() {
+        infoElement.html("");
+        infoElement.hide();
+    }
+}
 function getNodes(eles: Cy.NodeCollection, filter: (n: Cy.NodeSingular) => boolean) {
     return eles.nodes(filter as any);
 }
@@ -173,11 +202,12 @@ function run() {
     const cy = cytoscape({
         container: $("#cy"),
         elements,
-        autounselectify: true,
         boxSelectionEnabled: false,
+        selectionType: "single",
         style: getStyle(),
         layout: {name: "null"} as Cy.NullLayoutOptions,
     });
+    cy.on("select unselect", "node", NodeInfo.update);
     const boxLayout = new BoxGridLayout(cy, cy.nodes());
     applyLayout(cy.nodes(), boxLayout.getLayout());
 }

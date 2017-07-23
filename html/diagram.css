@@ -1,0 +1,15 @@
+#cy {
+    width: 100%;
+    height: 100vh;
+}
+.element-info {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    height: 300px;
+    width: 300px;
+    background-color: white;
+    color: black;
+    padding: 30px;
+    overflow: scroll;
+}
