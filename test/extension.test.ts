@@ -33,7 +33,7 @@ suite("Walker tests", function(this: ISuiteCallbackContext) {
         const { sourceFile, typechecker } = compile("namespace.ts");
         const walker = new NodeReferenceWalker(sourceFile, typechecker);
         walker.walk(sourceFile);
-        const { graphNodes } = walker;
-        assert.equal(1, graphNodes.length);
+        const idents = walker.graphNodes.map((n) => n.identifier.text);
+        assert.deepEqual(["TestNamespace", "a", "b"], idents);
     });
 });

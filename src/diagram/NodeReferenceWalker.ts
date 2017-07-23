@@ -36,7 +36,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private skipBindingElement: boolean;
     private skipParameterDeclaration: boolean = false;
-    private skipVariableDeclaration: boolean = false;
 
     private hasSeenJsxElement: boolean = false;
     private isReactUsed: boolean = false;
@@ -230,26 +229,13 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     public visitVariableDeclaration(node: ts.VariableDeclaration) {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 
-        if (isSingleVariable && !this.skipVariableDeclaration) {
+        if (isSingleVariable) {
             const variableIdentifier = node.name as ts.Identifier;
             this.storeIdentifierReference(variableIdentifier);
         }
 
         super.visitVariableDeclaration(node);
     }
-
-    // skip exported and declared variables
-    public visitVariableStatement(node: ts.VariableStatement) {
-        if (Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword, ts.SyntaxKind.DeclareKeyword)) {
-            this.skipBindingElement = true;
-            this.skipVariableDeclaration = true;
-        }
-
-        super.visitVariableStatement(node);
-        this.skipBindingElement = false;
-        this.skipVariableDeclaration = false;
-    }
-
     private storeIdentifierReference(identifier: ts.Identifier) {
         const name = identifier.text;
         const position = identifier.getStart();
