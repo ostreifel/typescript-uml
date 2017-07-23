@@ -48,6 +48,10 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
     }
 
+    public visitBlock(node: ts.Block): void {
+        // skip
+    }
+
     public visitBindingElement(node: ts.BindingElement) {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 

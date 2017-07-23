@@ -1,5 +1,7 @@
 namespace TestNamespace {
-    export const a = 1;
+    export const moduleVariable = 1;
     // tslint:disable-next-line:no-empty
-    export function b() {}
+    export function moduleFunction() {
+        const functionVariable = 3;
+    }
 }

@@ -4,6 +4,7 @@ export interface IDiagramNode extends IDiagramElement {
     data: {
         id: string;
         name: string;
+        parent?: string;
     };
 }
 

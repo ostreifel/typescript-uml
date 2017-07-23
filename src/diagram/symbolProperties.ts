@@ -18,6 +18,8 @@ function getColor(symbol: ts.Symbol): Cy.Css.Colour {
     } else if (symbol.flags & ts.SymbolFlags.EnumMember) {
         return "gray";
     } else if (symbol.flags & ts.SymbolFlags.Alias) {
+        return "red";
+    } else if (symbol.flags & ts.SymbolFlags.Module) {
         return "green";
     }
     return "pink";
@@ -27,7 +29,8 @@ function getShape(symbol: ts.Symbol): Cy.Css.NodeShape {
     if (
         symbol.flags & ts.SymbolFlags.Class ||
         symbol.flags & ts.SymbolFlags.Enum ||
-        symbol.flags & ts.SymbolFlags.Interface
+        symbol.flags & ts.SymbolFlags.Interface ||
+        symbol.flags & ts.SymbolFlags.Module
     ) {
         return "rectangle";
     } else if (
@@ -46,7 +49,8 @@ function getValign(symbol: ts.Symbol): "top" | "center" | "bottom" {
     if (
         symbol.flags & ts.SymbolFlags.Class ||
         symbol.flags & ts.SymbolFlags.Enum ||
-        symbol.flags & ts.SymbolFlags.Interface
+        symbol.flags & ts.SymbolFlags.Interface ||
+        symbol.flags & ts.SymbolFlags.Module
     ) {
         return "top";
     }
