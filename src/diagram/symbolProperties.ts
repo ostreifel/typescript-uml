@@ -83,6 +83,36 @@ function getType(symbol: ts.Symbol): string {
     }
     return "";
 }
+function occurrences(str: string, subString: string, allowOverlapping?: boolean): number {
+    str += "";
+    subString += "";
+    if (subString.length <= 0) {
+        return (str.length + 1);
+    }
+
+    let n = 0;
+    let pos = 0;
+    const step = allowOverlapping ? 1 : subString.length;
+
+    while (true) {
+        pos = str.indexOf(subString, pos);
+        if (pos >= 0) {
+            ++n;
+            pos += step;
+        } else {
+            break;
+        }
+    }
+    return n;
+}
+export function getLine(symbol: ts.Symbol): number | null {
+    if (!symbol.declarations || !symbol.declarations.length) {
+        return null;
+    }
+    const declaration = symbol.declarations[0];
+    const sourceFile = declaration.getSourceFile();
+    return sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
+}
 
 export function getSymbolProperties(symbol: ts.Symbol) {
     return {
@@ -90,5 +120,6 @@ export function getSymbolProperties(symbol: ts.Symbol) {
         shape: getShape(symbol),
         valign: getValign(symbol),
         type: getType(symbol),
+        line: getLine(symbol),
     };
 }
