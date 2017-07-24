@@ -1,16 +1,23 @@
 <html>
 
 <head>
-    <link rel="stylesheet" type="text/css" href="${rootPath}/html/diagram.css"></link>
 </head>
 <body>
     <div style="display: none" id="models">${models}</div>
     <div id="cy"></div>
     <div class="element-info" hidden></div>
+    <div class="filter">
+        <button class="more-options">
+             <img src="${rootPath}/html/img/filter.png" alt="filter" width=16/>
+        </button>
+        <div class="filter-options" hidden>
+        </div>
+    </div>
     <script src="${rootPath}/node_modules/cytoscape/dist/cytoscape.js"></script>
     <script src="${rootPath}/node_modules/jquery/dist/jquery.min.js"></script>
     <script src="${rootPath}/out/src/view/diagram.js"></script>
-    <style src="${rootPath}/html/diagram.css"></style>
+    <link rel="stylesheet" type="text/css" href="${rootPath}/html/diagram.css"></link>
+    <!-- <link rel="stylesheet" type="text/css" href="${rootPath}/node_modules/font-awesome/css/font-awesome.css"></link> -->
 </body>
 
 </html>

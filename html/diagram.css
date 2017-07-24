@@ -10,6 +10,19 @@
     max-width: 300px;
     background-color: white;
     color: black;
-    padding: 30px;
+    padding: 10px;
     overflow: scroll;
+}
+
+.filter {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 10px;
+}
+
+.filter .filter-options {
+    padding: 10px;
+    background-color: white;
+    color: black;
 }
