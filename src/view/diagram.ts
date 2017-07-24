@@ -8,6 +8,8 @@ function getStyle(): any {
             "color": "white",
             "shape": "data(shape)",
             "content": "data(name)",
+            "height": "data(nodeSize)",
+            "width": "data(nodeSize)",
             "text-outline-color": "black",
             "text-outline-width": 2,
             "text-valign": "data(valign)",
@@ -188,7 +190,11 @@ namespace NodeInfo {
     function show(node: Cy.NodeSingular) {
         infoElement.append($("<div>").text(node.data("name")));
         infoElement.append($("<div>").text(node.data("type")));
-        infoElement.append($("<div>").text("line " + node.data("line")));
+        infoElement.append($("<div>").text("line " + node.data("startLine")));
+        const lineCount = node.data("lineCount");
+        if (lineCount > 0) {
+            infoElement.append($("<div>").text("line count " + node.data("lineCount")));
+        }
         infoElement.show();
     }
     function hide() {

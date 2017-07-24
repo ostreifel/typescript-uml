@@ -83,35 +83,25 @@ function getType(symbol: ts.Symbol): string {
     }
     return "";
 }
-function occurrences(str: string, subString: string, allowOverlapping?: boolean): number {
-    str += "";
-    subString += "";
-    if (subString.length <= 0) {
-        return (str.length + 1);
-    }
-
-    let n = 0;
-    let pos = 0;
-    const step = allowOverlapping ? 1 : subString.length;
-
-    while (true) {
-        pos = str.indexOf(subString, pos);
-        if (pos >= 0) {
-            ++n;
-            pos += step;
-        } else {
-            break;
-        }
-    }
-    return n;
-}
-export function getLine(symbol: ts.Symbol): number | null {
+export function getPositionProperties(symbol: ts.Symbol) {
+    let nodeSize = 30;
     if (!symbol.declarations || !symbol.declarations.length) {
-        return null;
+        return {nodeSize};
     }
     const declaration = symbol.declarations[0];
     const sourceFile = declaration.getSourceFile();
-    return sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
+    const startLine = sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
+    const endLine = sourceFile.getLineAndCharacterOfPosition(declaration.getEnd()).line + 1;
+
+    const lineCount = endLine - startLine;
+    if (lineCount > 0) {
+        nodeSize = 30 * Math.ceil(Math.log10(lineCount));
+    }
+    return {
+        startLine,
+        lineCount,
+        nodeSize,
+    };
 }
 
 export function getSymbolProperties(symbol: ts.Symbol) {
@@ -120,6 +110,6 @@ export function getSymbolProperties(symbol: ts.Symbol) {
         shape: getShape(symbol),
         valign: getValign(symbol),
         type: getType(symbol),
-        line: getLine(symbol),
+        ...getPositionProperties(symbol),
     };
 }
