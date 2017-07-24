@@ -183,6 +183,8 @@ namespace NodeInfo {
     function show(node: Cy.NodeSingular) {
         const name = node.data("name");
         infoElement.append($("<div>").text(name));
+        const type: string = node.data("type");
+        infoElement.append($("<div>").text(type));
         infoElement.show();
     }
     function hide() {

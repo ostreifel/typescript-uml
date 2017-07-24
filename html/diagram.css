@@ -6,8 +6,8 @@
     position: absolute;
     bottom: 0px;
     right: 0px;
-    height: 300px;
-    width: 300px;
+    max-height: 300px;
+    max-width: 300px;
     background-color: white;
     color: black;
     padding: 30px;

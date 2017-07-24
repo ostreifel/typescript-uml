@@ -57,10 +57,38 @@ function getValign(symbol: ts.Symbol): "top" | "center" | "bottom" {
     return "center";
 }
 
+function getType(symbol: ts.Symbol): string {
+    if (symbol.flags & ts.SymbolFlags.Class) {
+        return "class";
+    } else if (symbol.flags & ts.SymbolFlags.Interface) {
+        return "interface";
+    } else if (symbol.flags & ts.SymbolFlags.Property) {
+        return "property";
+    } else if (symbol.flags & ts.SymbolFlags.Method) {
+        return "method";
+    } else if (symbol.flags & ts.SymbolFlags.TypeParameter) {
+        return "type parameter";
+    } else if (symbol.flags & ts.SymbolFlags.Function) {
+        return "function";
+    } else if (symbol.flags & ts.SymbolFlags.Variable) {
+        return "variable";
+    } else if (symbol.flags & ts.SymbolFlags.Enum) {
+        return "enum";
+    } else if (symbol.flags & ts.SymbolFlags.EnumMember) {
+        return "enum member";
+    } else if (symbol.flags & ts.SymbolFlags.Alias) {
+        return "alias";
+    } else if (symbol.flags & ts.SymbolFlags.Module) {
+        return "module";
+    }
+    return "";
+}
+
 export function getSymbolProperties(symbol: ts.Symbol) {
     return {
         color: getColor(symbol),
         shape: getShape(symbol),
         valign: getValign(symbol),
+        type: getType(symbol),
     };
 }
