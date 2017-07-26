@@ -13,7 +13,8 @@
         "noImplicitAny": false,
         "suppressImplicitAnyIndexErrors": false,
         "outDir": "out",
-        "rootDir": "."
+        "rootDir": ".",
+        "noUnusedLocals": true
     },
     "exclude": [
         "node_modules",

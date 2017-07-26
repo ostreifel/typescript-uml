@@ -43,7 +43,6 @@ export class BoxGridLayout {
     private readonly posGrid: string[][] = [];
 
     constructor(
-        private readonly cy: Cy.Core,
         eles: Cy.NodeCollection,
     ) {
         this.elementCount = getNodes(eles, (element) => !element.isParent()).length;
@@ -111,7 +110,7 @@ export class BoxGridLayout {
         }
     }
     private calcPositions() {
-        const wrapThreshold = Math.ceil(Math.sqrt(this.elementCount));
+        // const wrapThreshold = Math.ceil(Math.sqrt(this.elementCount));
         this.calcPositionsFor(this.unparented, 0, 0);
         for (const parentId in this.parented) {
             this.calcPositionsFor(this.parented[parentId], 0, this.posGrid.length);

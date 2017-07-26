@@ -11,7 +11,6 @@ import * as assert from "assert";
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from "path";
 import * as ts from "typescript";
-import * as vscode from "vscode";
 import { computeDiagramForFile } from "../src/diagram/computeDiagram";
 import { IDiagramNode } from "../src/diagram/DiagramModel";
 import { NodeReferenceWalker } from "../src/diagram/NodeReferenceWalker";
@@ -43,7 +42,6 @@ suite("Extension tests", function(this: ISuiteCallbackContext) {
     });
 
     test("namespace graph nodes", function(this: ITestCallbackContext) {
-        const { sourceFile, typechecker } = compile("namespace.ts");
         const filePath = toFilePath("namespace.ts");
         const diagram = computeDiagramForFile(filePath);
         const nodes = diagram.filter((e) => (e as IDiagramNode).data.name) as IDiagramNode[];
@@ -52,7 +50,6 @@ suite("Extension tests", function(this: ISuiteCallbackContext) {
     });
 
     test("namespace inheritance", function(this: ITestCallbackContext) {
-        const { sourceFile, typechecker } = compile("namespace.ts");
         const filePath = toFilePath("namespace.ts");
         const diagram = computeDiagramForFile(filePath);
         const nodes = diagram.filter((e) => (e as IDiagramNode).data.parent) as IDiagramNode[];

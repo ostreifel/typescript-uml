@@ -1,6 +1,6 @@
 
 const infoElement = $(".element-info");
-export function updateElementInfoBar(e: Cy.EventObject) {
+export function showElementInfo(e: Cy.EventObject) {
     const node: Cy.NodeCollection = e.target;
 
     if ((e.type as Cy.CollectionEventName) === "select" && node.nonempty() && node.isNode()) {

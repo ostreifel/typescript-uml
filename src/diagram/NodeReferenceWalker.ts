@@ -88,7 +88,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
             // named imports & namespace imports handled by other walker methods
             // importClause will be null for bare imports
             if (importClause != null && importClause.name != null) {
-                const variableIdentifier = importClause.name;
                 this.storeIdentifierReference(importClause.name);
             }
         }
@@ -131,9 +130,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitMethodDeclaration(node: ts.MethodDeclaration) {
         if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
-            const modifiers = node.modifiers;
-            const variableName = (node.name as ts.Identifier).text;
-
             this.storeIdentifierReference(node.name);
         }
 
@@ -210,9 +206,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     // check private member variables
     public visitPropertyDeclaration(node: ts.PropertyDeclaration) {
         if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
-            const modifiers = node.modifiers;
-            const variableName = (node.name as ts.Identifier).text;
-
             this.storeIdentifierReference(node.name);
         }
 
@@ -241,7 +234,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         super.visitVariableDeclaration(node);
     }
     private storeIdentifierReference(identifier: ts.Identifier) {
-        const name = identifier.text;
         const position = identifier.getStart();
 
         const fileName = this.sourceFile.fileName;

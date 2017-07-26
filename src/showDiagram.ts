@@ -1,13 +1,8 @@
 import { spawn } from "child_process";
-import { BrowserWindow } from "electron";
-import * as fs from "fs";
 import * as path from "path";
-import * as url from "url";
 import * as vscode from "vscode";
-import { computeDiagramForFile } from "./diagram/computeDiagram";
 import { ctx } from "./extension";
 
-const DIAGRAM_URL = vscode.Uri.parse("tsuml://preview");
 let tsFile: vscode.TextDocument;
 
 export function registerDiagram(): vscode.Disposable[] {
@@ -23,7 +18,7 @@ export function registerDiagram(): vscode.Disposable[] {
         if (!tsFile) {
             return;
         }
-        const childProcess = spawn(
+        spawn(
             path.join(ctx.extensionPath, "node_modules", "electron", "dist", "electron.exe"),
             [
                 path.join(ctx.extensionPath, "out", "src", "view", "main.js"),

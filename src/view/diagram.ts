@@ -1,7 +1,7 @@
 
 import { remote } from "electron";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
-import { updateElementInfoBar } from "./ElementInfo";
+import { showElementInfo } from "./ElementInfo";
 import { GraphFilter } from "./GraphFilter";
 import { applyLayout, BoxGridLayout } from "./Layouts";
 import { getCyStyle } from "./style";
@@ -20,8 +20,8 @@ function run() {
         style: getCyStyle(),
         layout: {name: "null"} as Cy.NullLayoutOptions,
     });
-    cy.on("select unselect", "node", updateElementInfoBar);
-    const boxLayout = new BoxGridLayout(cy, cy.nodes());
+    cy.on("select unselect", "node", showElementInfo);
+    const boxLayout = new BoxGridLayout(cy.nodes());
     applyLayout(cy.nodes(), boxLayout.getLayout());
     $(".more-options").click(() => $(".filter-options").toggle());
     new GraphFilter(cy).register();
