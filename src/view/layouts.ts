@@ -143,7 +143,7 @@ export class BoxGridLayout {
         let colIdex = 0;
         for (const nodeCollection of nodeCollections) {
             const width = this.getWidth(nodeCollection.length);
-            while (this.getAvailableColumn(rowIdx) + width >= wrapThreshold) {
+            while (this.getAvailableColumn(rowIdx) + width > wrapThreshold) {
                 rowIdx++;
             }
             colIdex = this.getAvailableColumn(rowIdx);

@@ -12,9 +12,15 @@ body {
     right: 0px;
     max-height: 300px;
     max-width: 300px;
-    padding: 10px;
     overflow: auto;
+}
+.node-info {
+    padding: 10px;
     background-color: white;
+}
+.node-info .name {
+    margin: 0;
+    font-size: 1em;
 }
 
 .filter {

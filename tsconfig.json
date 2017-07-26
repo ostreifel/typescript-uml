@@ -14,7 +14,8 @@
         "suppressImplicitAnyIndexErrors": false,
         "outDir": "out",
         "rootDir": ".",
-        "noUnusedLocals": true
+        "noUnusedLocals": true,
+        "jsx": "react"
     },
     "exclude": [
         "node_modules",

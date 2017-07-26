@@ -18,14 +18,18 @@ debugger;
 function createWindow() {
     global["diagramArgs"] = process.argv;
     // Create the browser window.
-    mainWindow = new BrowserWindow({ width: Infinity, height: Infinity });
+    mainWindow = new BrowserWindow({
+        title: `${path.basename(fileName)} Diagram`,
+        show: false,
+    });
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
         pathname: path.join(extensionPath, "html", "diagram.html"),
         protocol: "file:",
         slashes: true,
     }));
-    mainWindow.setTitle(`${path.basename(fileName)} Diagram`);
+    mainWindow.maximize();
+    mainWindow.show();
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
 
