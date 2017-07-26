@@ -1,5 +1,10 @@
 import { getNodes } from "./getNodes";
 
+export function registerFilterPane(cy: Cy.Core) {
+    $(".more-options").click(() => $(".filter-options").toggle());
+    new GraphFilter(cy).register();
+}
+
 export class GraphFilter {
     private $filterOptions = $(".filter-options");
     constructor(private readonly cy: Cy.Core) {

@@ -1,9 +1,9 @@
 
 import { remote } from "electron";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
-import { showElementInfo } from "./ElementInfo";
-import { GraphFilter } from "./GraphFilter";
-import { applyLayout, BoxGridLayout } from "./Layouts";
+import { registerInfoPane } from "./ElementInfo";
+import { registerFilterPane } from "./GraphFilter";
+import { applyLayout, boxGridLayout } from "./Layouts";
 import { getCyStyle } from "./style";
 
 function getModels() {
@@ -20,11 +20,9 @@ function run() {
         style: getCyStyle(),
         layout: {name: "null"} as Cy.NullLayoutOptions,
     });
-    cy.on("select unselect", "node", showElementInfo);
-    const boxLayout = new BoxGridLayout(cy.nodes());
-    applyLayout(cy.nodes(), boxLayout.getLayout());
-    $(".more-options").click(() => $(".filter-options").toggle());
-    new GraphFilter(cy).register();
+    applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    registerInfoPane(cy.on.bind(cy));
+    registerFilterPane(cy);
 }
 $("#cy").dblclick(run);
 setTimeout(run, 0);

@@ -4,7 +4,13 @@ import * as React from "react";
 import * as ReactDom from "react-dom";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
-export function showElementInfo(e: Cy.EventObject) {
+export function registerInfoPane(
+    on: (events: Cy.EventNames, selector: Cy.Selector, handler: Cy.EventHandler) => void,
+) {
+    on("select unselect", "node", showElementInfo);
+}
+
+function showElementInfo(e: Cy.EventObject) {
     const node: Cy.NodeCollection = e.target;
 
     if ((e.type as Cy.CollectionEventName) === "select" && node.nonempty() && node.isNode()) {

@@ -30,6 +30,11 @@ export function circleLayout(): Cy.CircleLayoutOptions {
     } as Cy.CircleLayoutOptions;
     return layout;
 }
+export function boxGridLayout(eles: Cy.NodeCollection): Cy.GridLayoutOptions {
+    const boxLayout = new BoxGridLayout(eles);
+    const layout = boxLayout.getLayout();
+    return layout;
+}
 
 interface IGridPos {
     col: number;
