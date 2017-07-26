@@ -184,6 +184,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
             ts.SyntaxKind.PublicKeyword,
             ts.SyntaxKind.PrivateKeyword,
             ts.SyntaxKind.ProtectedKeyword,
+            ts.SyntaxKind.ReadonlyKeyword,
         );
 
         if (!isSingleVariable && isPropertyParameter) {

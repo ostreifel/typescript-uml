@@ -13,8 +13,6 @@ console.log("args", process.argv);
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow;
-// tslint:disable-next-line:no-debugger
-debugger;
 function createWindow() {
     global["diagramArgs"] = process.argv;
     // Create the browser window.
@@ -29,7 +27,10 @@ function createWindow() {
         slashes: true,
     }));
     mainWindow.maximize();
-    mainWindow.show();
+
+    mainWindow.once("ready-to-show", () => {
+        mainWindow.show();
+    });
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()
 
