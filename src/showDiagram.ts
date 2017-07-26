@@ -1,5 +1,8 @@
+import { spawn } from "child_process";
+import { BrowserWindow } from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import * as url from "url";
 import * as vscode from "vscode";
 import { computeDiagramForFile } from "./diagram/computeDiagram";
 import { ctx } from "./extension";
@@ -41,6 +44,17 @@ export function registerDiagram(): vscode.Disposable[] {
         if (!tsFile) {
             return;
         }
+        const childProcess = spawn(
+            path.join(ctx.extensionPath, "node_modules", "electron", "dist", "electron.exe"),
+            [
+                path.join(ctx.extensionPath, "out", "src", "view", "main.js"),
+                ctx.extensionPath,
+                tsFile.fileName,
+            ],
+            {
+                env: {},
+            },
+        );
 
         return vscode.commands.executeCommand("vscode.previewHtml",
             DIAGRAM_URL,
