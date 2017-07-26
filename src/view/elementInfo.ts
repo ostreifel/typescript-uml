@@ -10,6 +10,7 @@ export function showElementInfo(e: Cy.EventObject) {
     }
 }
 function show(node: Cy.NodeSingular) {
+    infoElement.html("");
     infoElement.append($("<div>").text(node.data("name")));
     infoElement.append($("<div>").text(node.data("type")));
     infoElement.append($("<div>").text("line " + node.data("startLine")));

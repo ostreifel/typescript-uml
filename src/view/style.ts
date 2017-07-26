@@ -31,7 +31,7 @@ export function getCyStyle(): any {
             "line-color": "red",
             "source-arrow-color": "red",
             "target-arrow-color": "red",
-            "border-color": "black",
+            "border-color": "white",
             "border-opacity": "1",
             "border-width": "5",
             "border-style": "solid",

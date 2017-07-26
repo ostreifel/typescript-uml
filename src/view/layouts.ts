@@ -41,6 +41,7 @@ export class BoxGridLayout {
     private readonly unparented: Cy.NodeCollection;
     private readonly positions: { [id: string]: IGridPos } = {};
     private readonly posGrid: string[][] = [];
+    private readonly availableColumn: number[] = [];
 
     constructor(
         eles: Cy.NodeCollection,
@@ -93,27 +94,60 @@ export class BoxGridLayout {
         return this.posGrid[i];
     }
 
-    private calcPositionsFor(eles: Cy.NodeCollection, startCol: number, startRow: number): void {
-        const wrapThreshold = Math.ceil(Math.sqrt(eles.length));
+    private setAvailableColumn(row: number, col: number) {
+        const val = this.availableColumn[row] || 0;
+        if (val < col) {
+            this.availableColumn[row] = col;
+        }
+    }
+
+    private getAvailableColumn(row?: number): number {
+        if (typeof row !== "number" || !this.availableColumn[row]) {
+            return 0;
+        }
+        return this.availableColumn[row];
+    }
+
+    private getWidth(nodeCount: number): number {
+        return Math.round(Math.sqrt(nodeCount));
+    }
+
+    private calcPositionsFor(
+        eles: Cy.NodeCollection,
+        startCol: number,
+        startRow: number,
+    ): void {
+        const wrapThreshold = this.getWidth(eles.length);
         let col = 0;
         let row = 0;
         function next() {
             col++;
-            if (col > wrapThreshold) {
+            if (col >= wrapThreshold) {
                 col = 0;
                 row++;
             }
         }
         for (let i = 0; i < eles.length; i++) {
             this.getRow(row + startRow)[col + startCol] = eles[i].id();
+            this.setAvailableColumn(row + startRow, startCol + wrapThreshold);
             next();
         }
     }
     private calcPositions() {
-        // const wrapThreshold = Math.ceil(Math.sqrt(this.elementCount));
-        this.calcPositionsFor(this.unparented, 0, 0);
+        const wrapThreshold = this.getWidth(this.elementCount);
+        const nodeCollections: Cy.NodeCollection[] = [this.unparented];
         for (const parentId in this.parented) {
-            this.calcPositionsFor(this.parented[parentId], 0, this.posGrid.length);
+            nodeCollections.push(this.parented[parentId]);
+        }
+        let rowIdx = 0;
+        let colIdex = 0;
+        for (const nodeCollection of nodeCollections) {
+            const width = this.getWidth(nodeCollection.length);
+            while (this.getAvailableColumn(rowIdx) + width >= wrapThreshold) {
+                rowIdx++;
+            }
+            colIdex = this.getAvailableColumn(rowIdx);
+            this.calcPositionsFor(nodeCollection, colIdex, rowIdx);
         }
         for (let i = 0; i < this.posGrid.length; i++) {
             const row = this.getRow(i);

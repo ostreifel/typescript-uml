@@ -26,5 +26,5 @@ function run() {
     $(".more-options").click(() => $(".filter-options").toggle());
     new GraphFilter(cy).register();
 }
-// $("#cy").click(run);
+$("#cy").dblclick(run);
 setTimeout(run, 0);

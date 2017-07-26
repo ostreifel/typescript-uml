@@ -1,6 +1,10 @@
+body {
+    margin: 0px;
+}
 #cy {
     width: 100%;
     height: 100vh;
+    background-color: black;
 }
 .element-info {
     position: absolute;
@@ -10,7 +14,7 @@
     max-width: 300px;
     padding: 10px;
     overflow: auto;
-    border: 1px solid black;
+    background-color: white;
 }
 
 .filter {
@@ -22,5 +26,5 @@
 
 .filter .filter-options {
     padding: 10px;
-    border: 1px solid black;
+    background-color: white;
 }
