@@ -1,4 +1,6 @@
 
+import { computeDiagramForFile } from "../diagram/computeDiagram";
+
 function getStyle(): any {
     // tslint:disable-next-line:no-string-literal
     return cytoscape["stylesheet"]()
@@ -241,8 +243,11 @@ class GraphFilter {
 function getNodes(eles: Cy.NodeCollection, filter: (n: Cy.NodeSingular) => boolean) {
     return eles.nodes(filter as any);
 }
+function getModels() {
+    return computeDiagramForFile("C:\\Users\\ottos\\Documents\\repos\\TypeScript\\src\\compiler\\tsc.ts");
+}
 function run() {
-    const elements: Cy.ElementDefinition[] = JSON.parse($("#models").html());
+    const elements: Cy.ElementDefinition[] = getModels();
     const cy = cytoscape({
         container: $("#cy"),
         elements,

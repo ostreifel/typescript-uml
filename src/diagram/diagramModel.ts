@@ -1,4 +1,4 @@
-export interface IDiagramElement {}
+export interface IDiagramElement extends Cy.ElementDefinition {}
 
 export interface IDiagramNode extends IDiagramElement {
     data: {

@@ -1,13 +1,18 @@
 {
     "compilerOptions": {
+        "target": "es5",
         "module": "commonjs",
-        "target": "es6",
-        "outDir": "out",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
         "lib": [
-            "es6",
+            "es2015",
             "dom"
         ],
-        "sourceMap": true,
+        "noImplicitAny": false,
+        "suppressImplicitAnyIndexErrors": false,
+        "outDir": "out",
         "rootDir": "."
     },
     "exclude": [

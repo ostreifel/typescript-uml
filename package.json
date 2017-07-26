@@ -13,7 +13,7 @@
   "activationEvents": [
     "onCommand:tsuml.show"
   ],
-  "main": "./out/src/extension",
+  "main": "out/src/extension",
   "contributes": {
     "commands": [
       {
