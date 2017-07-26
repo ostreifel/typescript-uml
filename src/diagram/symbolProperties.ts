@@ -91,6 +91,7 @@ export function getPositionProperties(symbol: ts.Symbol) {
     const declaration = symbol.declarations[0];
     const sourceFile = declaration.getSourceFile();
     const startLine = sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
+    const startColumn = sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).character + 1;
     const endLine = sourceFile.getLineAndCharacterOfPosition(declaration.getEnd()).line + 1;
 
     const lineCount = endLine - startLine;
@@ -98,7 +99,9 @@ export function getPositionProperties(symbol: ts.Symbol) {
         nodeSize = 25 + Math.ceil(Math.log2(lineCount)) * 5;
     }
     return {
+        fileName: sourceFile.fileName,
         startLine,
+        startColumn,
         lineCount,
         nodeSize,
     };

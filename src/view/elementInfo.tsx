@@ -1,3 +1,5 @@
+import { spawn } from "child_process";
+import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
 
@@ -19,20 +21,29 @@ function hide() {
     infoElement.innerHTML = "";
 }
 
+function focusLine(file: string, line: number, column: number) {
+    spawn("code", ["-g", `${file}:${line}:${column}`]);
+}
+
 class NodeInfo extends React.Component<{getData: (key: string) => any}, {}> {
     public render() {
         const { getData } = this.props;
         return <div className="node-info">
             <h1 className="name">{getData("name")}</h1>
             <div className="type">{getData("type")}</div>
-            <div className="line">{`Line ${getData("startLine")}`}</div>
+            <a className="line" onClick={this.focusLine.bind(this)} href="#">
+                {`${path.basename(getData("fileName"))}:${getData("startLine")}:${getData("startColumn")}`}
+            </a>
             {getData("lineCount") > 1 ?
                 <div>
                     {`${getData("lineCount")} lines`}
                 </div> :
                 null
             }
-            <div className="type">{getData("type")}</div>
         </div>;
+    }
+    private focusLine() {
+        const { getData } = this.props;
+        focusLine(getData("fileName"), getData("startLine"), getData("startColumn"));
     }
 }
