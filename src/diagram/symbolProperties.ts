@@ -95,7 +95,7 @@ export function getPositionProperties(symbol: ts.Symbol) {
 
     const lineCount = endLine - startLine;
     if (lineCount > 0) {
-        nodeSize = 30 * Math.ceil(Math.log10(lineCount));
+        nodeSize = 25 + Math.ceil(Math.log2(lineCount)) * 5;
     }
     return {
         startLine,
