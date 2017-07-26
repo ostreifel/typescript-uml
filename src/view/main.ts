@@ -16,6 +16,7 @@ let mainWindow: Electron.BrowserWindow;
 // tslint:disable-next-line:no-debugger
 debugger;
 function createWindow() {
+    global["diagramArgs"] = process.argv;
     // Create the browser window.
     mainWindow = new BrowserWindow({ width: Infinity, height: Infinity });
     // and load the index.html of the app.

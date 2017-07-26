@@ -1,4 +1,5 @@
 
+import { remote } from "electron";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 
 function getStyle(): any {
@@ -34,7 +35,7 @@ function getStyle(): any {
             "line-color": "red",
             "source-arrow-color": "red",
             "target-arrow-color": "red",
-            "border-color": "white",
+            "border-color": "black",
             "border-opacity": "1",
             "border-width": "5",
             "border-style": "solid",
@@ -244,7 +245,8 @@ function getNodes(eles: Cy.NodeCollection, filter: (n: Cy.NodeSingular) => boole
     return eles.nodes(filter as any);
 }
 function getModels() {
-    return computeDiagramForFile("C:\\Users\\ottos\\Documents\\repos\\TypeScript\\src\\compiler\\tsc.ts");
+    const [, , , filePath] = remote.getGlobal("diagramArgs");
+    return computeDiagramForFile(filePath);
 }
 function run() {
     const elements: Cy.ElementDefinition[] = getModels();

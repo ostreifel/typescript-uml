@@ -8,10 +8,9 @@
     right: 0px;
     max-height: 300px;
     max-width: 300px;
-    background-color: white;
-    color: black;
     padding: 10px;
-    overflow: scroll;
+    overflow: auto;
+    border: 1px solid black;
 }
 
 .filter {
@@ -23,6 +22,5 @@
 
 .filter .filter-options {
     padding: 10px;
-    background-color: white;
-    color: black;
+    border: 1px solid black;
 }
