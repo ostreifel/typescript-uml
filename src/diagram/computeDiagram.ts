@@ -97,7 +97,7 @@ function getGraphNodeContainingPos(graphNodes: IGraphNode[], pos: number): IGrap
     return currNode;
 }
 
-function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): IDiagramEdge | null {
+function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol, pos: number): IDiagramEdge | null {
     if (
         !from || !to ||
         !from.declarations || !to.declarations ||
@@ -123,11 +123,20 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol): ID
     if (!fromId || !toId || fromId === toId) {
         return null;
     }
+    const sourceFile = fromNode.getSourceFile();
+    const lineChar = sourceFile.getLineAndCharacterOfPosition(pos);
     return {
         data: {
             id: `${fromId}-${toId}`,
             source: fromId,
             target: toId,
+            references: [
+                {
+                    fileName: sourceFile.fileName,
+                    line: lineChar.line + 1,
+                    column: lineChar.character + 1,
+                },
+            ],
             weight: 1,
         },
     };
@@ -144,16 +153,20 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
             if (!referencingNode) {
                 continue;
             }
-            const edge = createEdge(ctx, referencingNode.symbol, graphNode.symbol);
-            // if ( // Don't include parent-child references
-            //     edge.data.source === ctx.nodes[edge.data.target].data.parent ||
-            //     edge.data.target === ctx.nodes[edge.data.source].data.parent
-            // ) {
-            //     continue;
-            // }
+            const edge = createEdge(ctx, referencingNode.symbol, graphNode.symbol, reference.textSpan.start);
+
             if (edge) {
+                if ( // Don't include parent-child references
+                    edge.data.source === ctx.nodes[edge.data.target].data.parent ||
+                    edge.data.target === ctx.nodes[edge.data.source].data.parent
+                ) {
+                    continue;
+                }
                 if (edge.data.id in ctx.references) {
                     ctx.references[edge.data.id].data.weight++;
+                    ctx.references[edge.data.id].data.references.push(
+                        ...edge.data.references,
+                    );
                 } else {
                     ctx.references[edge.data.id] = edge;
                     edges.push(edge);

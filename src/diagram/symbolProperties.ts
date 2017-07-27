@@ -1,4 +1,5 @@
 import * as ts from "typescript";
+import { IDiagramFilePosition } from "./DiagramModel";
 
 function getColor(symbol: ts.Symbol): Cy.Css.Colour {
     if (symbol.flags & ts.SymbolFlags.Class) {
@@ -90,18 +91,20 @@ export function getPositionProperties(symbol: ts.Symbol) {
     }
     const declaration = symbol.declarations[0];
     const sourceFile = declaration.getSourceFile();
-    const startLine = sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).line + 1;
-    const startColumn = sourceFile.getLineAndCharacterOfPosition(declaration.getStart()).character + 1;
+    const startLineChar = sourceFile.getLineAndCharacterOfPosition(declaration.getStart());
     const endLine = sourceFile.getLineAndCharacterOfPosition(declaration.getEnd()).line + 1;
+    const position: IDiagramFilePosition = {
+        fileName: sourceFile.fileName,
+        line: startLineChar.line + 1,
+        column: startLineChar.character + 1,
+    };
 
-    const lineCount = endLine - startLine;
+    const lineCount = endLine - startLineChar.line;
     if (lineCount > 0) {
         nodeSize = 25 + Math.ceil(Math.log2(lineCount)) * 5;
     }
     return {
-        fileName: sourceFile.fileName,
-        startLine,
-        startColumn,
+        position,
         lineCount,
         nodeSize,
     };

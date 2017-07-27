@@ -22,6 +22,11 @@ body {
                 font-size: 1em;
             }
         }
+        .edge {
+            &> a {
+                display: block;
+            }
+        }
     }
 
     .filter {

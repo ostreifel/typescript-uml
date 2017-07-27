@@ -14,7 +14,14 @@ export interface IDiagramEdge extends IDiagramElement {
         source: string;
         target: string;
         weight: number;
+        references: IDiagramFilePosition[];
     };
+}
+
+export interface IDiagramFilePosition {
+    fileName: string;
+    line: number;
+    column: number;
 }
 
 export interface IDiagramModel extends Array<IDiagramEdge | IDiagramNode> { }

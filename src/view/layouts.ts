@@ -72,6 +72,7 @@ export class BoxGridLayout {
             // nodeDimensionsIncludeLabels: true,
             condense: true,
             avoidOverlapPadding: 140,
+            fit: true,
         } as Cy.GridLayoutOptions;
     }
 
