@@ -5,23 +5,38 @@ import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { registerInfoPane } from "./ElementInfo";
 import { registerFilterPane } from "./GraphFilter";
-import { applyLayout, boxGridLayout, getPositions } from "./Layouts";
+import {
+    applyLayout,
+    boxGridLayout,
+    getPositions,
+    INodePositions,
+    presetLayout,
+} from "./Layouts";
 import { getCyStyle } from "./style";
 
-function saveGraph(elements: Cy.ElementDefinition[], cy: Cy.Core) {
-    const [, , , filePath] = remote.getGlobal("diagramArgs");
-    const saveData = {
-        version: 1,
+const fileExtension = "tsgraph.json";
+const fileFilters: Electron.FileFilter[] = [{
+    name: "Typescript Graphs",
+    extensions: [fileExtension],
+}];
+
+interface ISaveData {
+    fileFormatVersion: number;
+    elements: Cy.ElementDefinition[];
+    filePath: string;
+    positions: INodePositions;
+}
+function saveGraph(filePath: string, elements: Cy.ElementDefinition[], cy: Cy.Core) {
+    const saveData: ISaveData = {
+        fileFormatVersion: 1,
         elements,
         filePath,
         positions: getPositions(cy.nodes()),
     };
-    const defaultPath = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1] + ".tsgraph.json";
+    const baseFileName = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1];
+    const defaultPath =  `${baseFileName}.${fileExtension}`;
     remote.dialog.showSaveDialog({
-        filters: [{
-            name: "Typescript Graphs",
-            extensions: ["tsgraph.json"],
-        }],
+        filters: fileFilters,
         defaultPath,
     }, (fileName) => {
         fs.writeFile(fileName, JSON.stringify(saveData), (err) => {
@@ -30,7 +45,21 @@ function saveGraph(elements: Cy.ElementDefinition[], cy: Cy.Core) {
         });
     });
 }
-function setMenuItems(elements: Cy.ElementDefinition[], cy: Cy.Core) {
+function loadGraph() {
+    remote.dialog.showOpenDialog({
+        filters: fileFilters,
+    }, ([filePath]) => {
+        if (!filePath) {
+            return;
+        }
+        fs.readFile(filePath, (err, buffer: Buffer) => {
+            const dataStr = buffer.toString("utf-8");
+            const data = JSON.parse(dataStr);
+            updateUI(data.filePath, data.elements, () => presetLayout(data.positions));
+        });
+    });
+}
+function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy.Core) {
     const menu = remote.Menu.buildFromTemplate([
         {
             label: "File",
@@ -38,13 +67,13 @@ function setMenuItems(elements: Cy.ElementDefinition[], cy: Cy.Core) {
                 {
                     label: "Save",
                     accelerator: "CommandOrControl+S",
-                    click: () => saveGraph(elements, cy),
+                    click: () => saveGraph(filePath, elements, cy),
                 },
                 {
                     label: "Open",
                     accelerator: "CommandOrControl+O",
                     // tslint:disable-next-line:no-console
-                    click: () => console.log("TODO open here"),
+                    click: () => loadGraph(),
                 },
             ],
         },
@@ -59,25 +88,32 @@ function setMenuItems(elements: Cy.ElementDefinition[], cy: Cy.Core) {
     ]);
     remote.getCurrentWindow().setMenu(menu);
 }
-function getModels() {
-    const [, , , filePath] = remote.getGlobal("diagramArgs");
+function getModels(filePath: string) {
     return computeDiagramForFile(filePath);
 }
-function run() {
-    const elements: Cy.ElementDefinition[] = getModels();
+function updateUI(
+    filePath: string,
+    elements: Cy.ElementDefinition[],
+    layout: (cy: Cy.NodeCollection) => Cy.LayoutOptions,
+) {
     const cy = cytoscape({
         container: $("#cy"),
         elements,
         boxSelectionEnabled: false,
         selectionType: "single",
         style: getCyStyle(),
-        layout: {name: "null"} as Cy.NullLayoutOptions,
+        layout: { name: "null" } as Cy.NullLayoutOptions,
     });
-    const runLayout = () => applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
     runLayout();
     $("#cy").dblclick(runLayout);
     registerInfoPane(cy.on.bind(cy));
     registerFilterPane(cy);
-    setMenuItems(elements, cy);
+    setMenuItems(filePath, elements, cy);
 }
-setTimeout(run, 0);
+function loadInitial() {
+    const [, , , filePath] = remote.getGlobal("diagramArgs");
+    const elements: Cy.ElementDefinition[] = getModels(filePath);
+    updateUI(filePath, elements, (eles) => boxGridLayout(eles));
+}
+setTimeout(loadInitial, 0);
