@@ -41,7 +41,7 @@ export interface INodePositions {
 export function presetLayout(positions: INodePositions): Cy.PresetLayoutOptions {
     const layout = {
         name: "preset",
-        positions: (id) => positions[id],
+        positions,
     } as Cy.PresetLayoutOptions;
     return layout;
 }
