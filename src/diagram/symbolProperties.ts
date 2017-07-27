@@ -9,7 +9,9 @@ function getColor(symbol: ts.Symbol): Cy.Css.Colour {
     } else if (symbol.flags & ts.SymbolFlags.ClassMember) {
         return "lightblue";
     } else if (symbol.flags & ts.SymbolFlags.TypeParameter) {
-        return "#2a7189"; // darker light blue
+        return "#2a7189"; // dark light blue
+    } else if (symbol.flags & ts.SymbolFlags.Constructor) {
+        return "#2b6378"; // darker light blue
     } else if (symbol.flags & ts.SymbolFlags.Function) {
         return "purple";
     } else if (symbol.flags & ts.SymbolFlags.Variable) {
@@ -69,6 +71,8 @@ function getType(symbol: ts.Symbol): string {
         return "method";
     } else if (symbol.flags & ts.SymbolFlags.TypeParameter) {
         return "type parameter";
+    } else if (symbol.flags & ts.SymbolFlags.Constructor) {
+        return "constructor";
     } else if (symbol.flags & ts.SymbolFlags.Function) {
         return "function";
     } else if (symbol.flags & ts.SymbolFlags.Variable) {
