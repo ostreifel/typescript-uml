@@ -12,9 +12,11 @@ body {
         max-height: 300px;
         max-width: 300px;
         overflow: auto;
-        .node-info {
+        .node, .edge {
             padding: 10px;
             background-color: white;
+        }
+        .node {
             .name {
                 margin: 0;
                 font-size: 1em;
