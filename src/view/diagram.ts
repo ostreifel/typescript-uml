@@ -9,12 +9,13 @@ import { applyLayout, boxGridLayout, getPositions } from "./Layouts";
 import { getCyStyle } from "./style";
 
 function saveGraph(elements: Cy.ElementDefinition[], cy: Cy.Core) {
+    const [, , , filePath] = remote.getGlobal("diagramArgs");
     const saveData = {
         version: 1,
         elements,
+        filePath,
         positions: getPositions(cy.nodes()),
     };
-    const [, , , filePath] = remote.getGlobal("diagramArgs");
     const defaultPath = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1] + ".tsgraph.json";
     remote.dialog.showSaveDialog({
         filters: [{
@@ -23,7 +24,7 @@ function saveGraph(elements: Cy.ElementDefinition[], cy: Cy.Core) {
         }],
         defaultPath,
     }, (fileName) => {
-        fs.writeFile(fileName, saveData, (err) => {
+        fs.writeFile(fileName, JSON.stringify(saveData), (err) => {
             // tslint:disable-next-line:no-console
             console.log("error", err);
         });
