@@ -145,6 +145,12 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
                 continue;
             }
             const edge = createEdge(ctx, referencingNode.symbol, graphNode.symbol);
+            // if ( // Don't include parent-child references
+            //     edge.data.source === ctx.nodes[edge.data.target].data.parent ||
+            //     edge.data.target === ctx.nodes[edge.data.source].data.parent
+            // ) {
+            //     continue;
+            // }
             if (edge) {
                 if (edge.data.id in ctx.references) {
                     ctx.references[edge.data.id].data.weight++;
@@ -170,14 +176,16 @@ function computeDiagram(
     for (const graphNode of walker.graphNodes) {
         const id = getIdentifierId(ctx, graphNode.identifier);
         if (id) {
-            elements.push({
+            const node = {
                 data: {
                     id,
                     name: graphNode.identifier.text,
                     parent: getParentId(ctx, graphNode.symbol),
                     ...getSymbolProperties(graphNode.symbol),
                 },
-            });
+            };
+            elements.push(node);
+            ctx.nodes[node.data.id] = node;
             validNodes.push(graphNode);
         }
     }

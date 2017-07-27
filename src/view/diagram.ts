@@ -20,9 +20,10 @@ function run() {
         style: getCyStyle(),
         layout: {name: "null"} as Cy.NullLayoutOptions,
     });
-    applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    const runLayout = () => applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    runLayout();
+    $("#cy").dblclick(runLayout);
     registerInfoPane(cy.on.bind(cy));
     registerFilterPane(cy);
 }
-$("#cy").dblclick(run);
 setTimeout(run, 0);
