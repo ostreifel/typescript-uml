@@ -91,6 +91,9 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
 function getModels(filePath: string) {
     return computeDiagramForFile(filePath);
 }
+function updateWindowTitle(filePath: string) {
+    remote.getCurrentWindow().setTitle(`${path.basename(filePath)} UML`);
+}
 function updateUI(
     filePath: string,
     elements: Cy.ElementDefinition[],
@@ -104,6 +107,7 @@ function updateUI(
         style: getCyStyle(),
         layout: { name: "null" } as Cy.NullLayoutOptions,
     });
+    updateWindowTitle(filePath);
     const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
     runLayout();
     $("#cy").dblclick(runLayout);

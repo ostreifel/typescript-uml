@@ -7,7 +7,7 @@ const BrowserWindow = electron.BrowserWindow;
 import * as path from "path";
 import * as url from "url";
 
-const [, , extensionPath, fileName] = process.argv;
+const [, , extensionPath] = process.argv;
 // tslint:disable-next-line:no-console
 console.log("args", process.argv);
 // Keep a global reference of the window object, if you don't, the window will
@@ -17,7 +17,6 @@ function createWindow() {
     global["diagramArgs"] = process.argv;
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        title: `${path.basename(fileName)} Diagram`,
         show: false,
     });
     // and load the index.html of the app.
