@@ -189,7 +189,7 @@ function computeDiagram(
     for (const graphNode of walker.graphNodes) {
         const id = getIdentifierId(ctx, graphNode.identifier);
         if (id) {
-            const node = {
+            const node: IDiagramNode = {
                 data: {
                     id,
                     name: graphNode.identifier.text,

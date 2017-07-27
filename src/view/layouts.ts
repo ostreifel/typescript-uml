@@ -35,6 +35,23 @@ export function boxGridLayout(eles: Cy.NodeCollection): Cy.GridLayoutOptions {
     const layout = boxLayout.getLayout();
     return layout;
 }
+export interface INodePositions {
+    [nodeId: string]: Cy.Position;
+}
+export function presetLayout(positions: INodePositions): Cy.PresetLayoutOptions {
+    const layout = {
+        name: "preset",
+        positions: (id) => positions[id],
+    } as Cy.PresetLayoutOptions;
+    return layout;
+}
+export function getPositions(eles: Cy.NodeCollection): INodePositions {
+    const positions: INodePositions = {};
+    eles.forEach((ele) => {
+        positions[ele.id()] = ele.position();
+    });
+    return positions;
+}
 
 interface IGridPos {
     col: number;

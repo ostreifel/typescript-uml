@@ -27,6 +27,7 @@ function createWindow() {
         slashes: true,
     }));
     mainWindow.maximize();
+    mainWindow.setMenu(null);
 
     mainWindow.once("ready-to-show", () => {
         mainWindow.show();

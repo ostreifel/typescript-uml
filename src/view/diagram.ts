@@ -1,11 +1,63 @@
 
 import { remote } from "electron";
+import * as fs from "fs";
+import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { registerInfoPane } from "./ElementInfo";
 import { registerFilterPane } from "./GraphFilter";
-import { applyLayout, boxGridLayout } from "./Layouts";
+import { applyLayout, boxGridLayout, getPositions } from "./Layouts";
 import { getCyStyle } from "./style";
 
+function saveGraph(elements: Cy.ElementDefinition[], cy: Cy.Core) {
+    const saveData = {
+        version: 1,
+        elements,
+        positions: getPositions(cy.nodes()),
+    };
+    const [, , , filePath] = remote.getGlobal("diagramArgs");
+    const defaultPath = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1] + ".tsgraph.json";
+    remote.dialog.showSaveDialog({
+        filters: [{
+            name: "Typescript Graphs",
+            extensions: ["tsgraph.json"],
+        }],
+        defaultPath,
+    }, (fileName) => {
+        fs.writeFile(fileName, saveData, (err) => {
+            // tslint:disable-next-line:no-console
+            console.log("error", err);
+        });
+    });
+}
+function setMenuItems(elements: Cy.ElementDefinition[], cy: Cy.Core) {
+    const menu = remote.Menu.buildFromTemplate([
+        {
+            label: "File",
+            submenu: [
+                {
+                    label: "Save",
+                    accelerator: "CommandOrControl+S",
+                    click: () => saveGraph(elements, cy),
+                },
+                {
+                    label: "Open",
+                    accelerator: "CommandOrControl+O",
+                    // tslint:disable-next-line:no-console
+                    click: () => console.log("TODO open here"),
+                },
+            ],
+        },
+        {
+            label: "View",
+            submenu: [
+                { role: "togglefullscreen" },
+                { role: "reload" },
+                { role: "toggledevtools" },
+            ],
+        },
+    ]);
+    remote.getCurrentWindow().setMenu(menu);
+}
 function getModels() {
     const [, , , filePath] = remote.getGlobal("diagramArgs");
     return computeDiagramForFile(filePath);
@@ -25,5 +77,6 @@ function run() {
     $("#cy").dblclick(runLayout);
     registerInfoPane(cy.on.bind(cy));
     registerFilterPane(cy);
+    setMenuItems(elements, cy);
 }
 setTimeout(run, 0);
