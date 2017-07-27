@@ -20,7 +20,6 @@ function createLanguageService(fileName: string, source: string) {
 
 export interface IGraphNode {
     symbol: ts.Symbol;
-    identifier: ts.Identifier;
     references: ts.ReferencedSymbol[];
 }
 
@@ -29,7 +28,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private readonly languageService: ts.LanguageService;
 
-    constructor(readonly sourceFile: ts.SourceFile, private readonly typechecker: ts.TypeChecker) {
+    constructor(readonly sourceFile: ts.SourceFile) {
         super();
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
     }
@@ -38,19 +37,18 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         // skip
     }
 
+    public visitConstructorDeclaration(node: ts.ConstructorDeclaration): void {
+        this.storeNodeReferences(node);
+        super.visitConstructorDeclaration(node);
+    }
+
     public visitBindingElement(node: ts.BindingElement) {
-        const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
-
-        if (isSingleVariable) {
-            const variableIdentifier = node.name as ts.Identifier;
-            this.storeIdentifierReference(variableIdentifier);
-        }
-
+        this.storeNodeReferences(node);
         super.visitBindingElement(node);
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
-        this.storeIdentifierReference(node.name);
+        this.storeNodeReferences(node);
         super.visitFunctionDeclaration(node);
     }
 
@@ -60,8 +58,8 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
             // named imports & namespace imports handled by other walker methods
             // importClause will be null for bare imports
-            if (importClause != null && importClause.name != null) {
-                this.storeIdentifierReference(importClause.name);
+            if (importClause != null) {
+                this.storeNodeReferences(importClause);
             }
         }
 
@@ -70,59 +68,49 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitImportEqualsDeclaration(node: ts.ImportEqualsDeclaration) {
         if (!Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword)) {
-            const name = node.name;
-            this.storeIdentifierReference(name);
+            this.storeNodeReferences(node);
         }
         super.visitImportEqualsDeclaration(node);
     }
 
     public visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
-        this.storeIdentifierReference(node.name);
+        this.storeNodeReferences(node);
         super.visitInterfaceDeclaration(node);
     }
 
     public visitMethodDeclaration(node: ts.MethodDeclaration) {
-        if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
-            this.storeIdentifierReference(node.name);
-        }
+        this.storeNodeReferences(node);
         super.visitMethodDeclaration(node);
     }
 
     public visitModuleDeclaration(node: ts.ModuleDeclaration): void {
-        if (node.name != null && node.name.kind === ts.SyntaxKind.Identifier) {
-            this.storeIdentifierReference(node.name);
-        }
+        this.storeNodeReferences(node);
         super.visitModuleDeclaration(node);
     }
 
     public visitNamedImports(node: ts.NamedImports) {
         for (const namedImport of node.elements) {
-            this.storeIdentifierReference(namedImport.name);
+            this.storeNodeReferences(namedImport);
         }
         super.visitNamedImports(node);
     }
 
     public visitNamespaceImport(node: ts.NamespaceImport) {
-        this.storeIdentifierReference(node.name);
+        this.storeNodeReferences(node);
         super.visitNamespaceImport(node);
     }
 
     public visitPropertyDeclaration(node: ts.PropertyDeclaration) {
-        if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
-            this.storeIdentifierReference(node.name);
-        }
-
+        this.storeNodeReferences(node);
         super.visitPropertyDeclaration(node);
     }
     public visitPropertySignature(node: ts.PropertySignature) {
-        if (node.name && node.name.kind === ts.SyntaxKind.Identifier) {
-            this.storeIdentifierReference(node.name as ts.Identifier);
-        }
+        this.storeNodeReferences(node);
         super.visitPropertySignature(node);
     }
 
     public visitClassDeclaration(node: ts.ClassDeclaration): void {
-        this.storeIdentifierReference(node.name);
+        this.storeNodeReferences(node);
         super.visitClassDeclaration(node);
     }
 
@@ -130,23 +118,21 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 
         if (isSingleVariable) {
-            const variableIdentifier = node.name as ts.Identifier;
-            this.storeIdentifierReference(variableIdentifier);
+            this.storeNodeReferences(node);
         }
 
         super.visitVariableDeclaration(node);
     }
-    private storeIdentifierReference(identifier: ts.Identifier) {
-        const position = identifier.getStart();
+    private storeNodeReferences(node: ts.NamedDeclaration) {
+        const position = node.name && node.name.kind === ts.SyntaxKind.Identifier ? node.name.getStart() : node.getStart();
 
         const fileName = this.sourceFile.fileName;
-        const symbol = this.typechecker.getSymbolAtLocation(identifier);
+        const symbol: ts.Symbol = node["symbol"];
         // this.languageService.getDocumentHighlights(fileName, position, [fileName]);
         const references = this.languageService.findReferences(fileName, position);
         if (symbol) {
             this.graphNodes.push({
                 symbol,
-                identifier,
                 references,
             });
         }

@@ -34,10 +34,10 @@ suite("Extension tests", function(this: ISuiteCallbackContext) {
     }
 
     test("namespace walker nodes", function(this: ITestCallbackContext) {
-        const { sourceFile, typechecker } = compile("namespace.ts");
-        const walker = new NodeReferenceWalker(sourceFile, typechecker);
+        const { sourceFile } = compile("namespace.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
         walker.walk(sourceFile);
-        const idents = walker.graphNodes.map((n) => n.identifier.text);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
         assert.deepEqual(["TestNamespace", "moduleVariable", "moduleFunction"], idents);
     });
 

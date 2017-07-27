@@ -38,8 +38,7 @@ function isLocal(parent: ts.Node, child: ts.NamedDeclaration) {
     return candidateNode.pos === child.pos && candidateNode.end === child.end;
 }
 
-function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): string | null {
-    const symbol = ctx.typechecker.getSymbolAtLocation(identifier);
+function getSymbolId(ctx: IReferencesContext, symbol: ts.Symbol): string | null {
     if (!symbol || !symbol.declarations || !symbol.declarations.length) {
         return null;
     }
@@ -53,10 +52,8 @@ function getIdentifierId(ctx: IReferencesContext, identifier: ts.Identifier): st
         } else if (currNode.pos === ctx.sourceFile.pos && currNode.end === ctx.sourceFile.end) {
             idParts.unshift(ctx.sourceFile.fileName);
             return idParts.join(".");
-        } else if (currNode.name && currNode.name.kind === ts.SyntaxKind.Identifier) {
-            idParts.unshift(currNode.name.text);
-        // } else if (currNode.kind === ts.SyntaxKind.Block) {
-        //     break;
+        } else if (currNode["symbol"] && currNode["symbol"].getName()) {
+            idParts.unshift(currNode["symbol"].getName());
         }
         currNode = currNode.parent as ts.NamedDeclaration;
     }
@@ -80,7 +77,7 @@ function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
     ) {
         parentNode = parentNode.parent as ts.NamedDeclaration;
     }
-    return parentNode && getIdentifierId(ctx, parentNode.name as ts.Identifier);
+    return parentNode && getSymbolId(ctx, parentNode["symbol"]);
 }
 
 function getGraphNodeContainingPos(graphNodes: IGraphNode[], pos: number): IGraphNode | null {
@@ -106,20 +103,10 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol, pos
         return null;
     }
     const fromNode = from.declarations[0] as ts.NamedDeclaration;
-    const toNode = to.declarations[0] as ts.NamedDeclaration;
-    if (
-        !fromNode.name ||
-        fromNode.name.kind !== ts.SyntaxKind.Identifier ||
-        !toNode.name ||
-        toNode.name.kind !== ts.SyntaxKind.Identifier
-    ) {
-        return null;
-    }
-    const fromIdent = fromNode.name as ts.Identifier;
-    const toIdent = toNode.name as ts.Identifier;
+    // const toNode = to.declarations[0] as ts.NamedDeclaration;
 
-    const fromId = getIdentifierId(ctx, fromIdent);
-    const toId = getIdentifierId(ctx, toIdent);
+    const fromId = getSymbolId(ctx, from);
+    const toId = getSymbolId(ctx, to);
     if (!fromId || !toId || fromId === toId) {
         return null;
     }
@@ -182,17 +169,17 @@ function computeDiagram(
 ): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
 
-    const walker = new NodeReferenceWalker(ctx.sourceFile, ctx.typechecker);
+    const walker = new NodeReferenceWalker(ctx.sourceFile);
     walker.walk(walker.sourceFile);
     const validNodes: IGraphNode[] = [];
     // Add nodes
     for (const graphNode of walker.graphNodes) {
-        const id = getIdentifierId(ctx, graphNode.identifier);
+        const id = getSymbolId(ctx, graphNode.symbol);
         if (id) {
             const node: IDiagramNode = {
                 data: {
                     id,
-                    name: graphNode.identifier.text,
+                    name: graphNode.symbol.getName(),
                     parent: getParentId(ctx, graphNode.symbol),
                     ...getSymbolProperties(graphNode.symbol),
                 },
