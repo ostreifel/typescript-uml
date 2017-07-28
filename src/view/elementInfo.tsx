@@ -23,7 +23,6 @@ function showElementInfo(e: Cy.EventObject) {
     }
 
     if (
-        (e.type as Cy.CollectionEventName) === "select" &&
         selected !== target.id()
     ) {
         selectOnly(target);
@@ -46,6 +45,10 @@ function selectOnly(ele: Cy.CollectionElements) {
 
 function hide() {
     infoElement.innerHTML = "";
+    selected = "";
+    synthenticSelection = true;
+    cy.elements().unselect();
+    synthenticSelection = false;
 }
 function showEdge(edge: Cy.EdgeSingular) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
@@ -60,6 +63,7 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
         synthenticSelection = false;
         const references: IDiagramFilePosition[] = getData("references");
         return <div className="edge">
+            <div>{`${edge.source().data("name")} to ${edge.target().data("name")}`}</div>
             <div>{`${getData("weight")} references`}</div>
             {references.map((r) => <PositionLink pos={r} />)}
         </div>;
