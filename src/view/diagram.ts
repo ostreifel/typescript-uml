@@ -107,13 +107,13 @@ function updateUI(
         style: getCyStyle(),
         layout: { name: "null" } as Cy.NullLayoutOptions,
     });
+    setMenuItems(filePath, elements, cy);
     updateWindowTitle(filePath);
     const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
     runLayout();
     $("#cy").dblclick(runLayout);
     registerInfoPane(cy.on.bind(cy));
     registerFilterPane(cy);
-    setMenuItems(filePath, elements, cy);
 }
 function loadInitial() {
     const [, , , filePath] = remote.getGlobal("diagramArgs");

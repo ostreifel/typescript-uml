@@ -1,5 +1,23 @@
 body {
     margin: 0px;
+    .filter {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        padding: 10px;
+        .options {
+            padding: 10px;
+            background-color: white;
+            .option.ms-Toggle {
+                display: flex;
+                flex-direction: row-reverse;
+                justify-content: flex-end;
+                label {
+                    margin-left: 5px;
+                }
+            }
+        }
+    }
     #cy {
         height: 100%;
         width: 100%;
@@ -26,17 +44,6 @@ body {
             &> a {
                 display: block;
             }
-        }
-    }
-
-    .filter {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 10px;
-        .filter-options {
-            padding: 10px;
-            background-color: white;
         }
     }
 }
