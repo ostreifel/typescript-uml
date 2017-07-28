@@ -18,6 +18,7 @@ function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         show: false,
+        title: "Loading file....",
     });
     mainWindow.maximize();
     mainWindow.setMenu(null);
