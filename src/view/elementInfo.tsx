@@ -134,7 +134,7 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
             {
                 inEdges.length > 0 ?
                 <div className="reference-group references-to-group">
-                    <h2>Referenced By Nodes</h2>
+                    <h2>Referenced By</h2>
                     <div className="references">
                         {inEdges.map((e) => <NodeLink node={e.source()} />)}
                     </div>
@@ -144,7 +144,7 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
             {
                 outEdges.length > 0 ?
                 <div className="reference-group references-from-group">
-                    <h2>References Nodes</h2>
+                    <h2>References</h2>
                     <div className="references">
                         {outEdges.map((e) => <NodeLink node={e.target()} />)}
                     </div>
