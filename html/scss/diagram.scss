@@ -1,11 +1,14 @@
 body {
     margin: 0px;
-    .filter {
+    .filter-container .filter {
         position: absolute;
         top: 0px;
         left: 0px;
         padding: 10px;
         .options {
+            &.hidden {
+                display: none;
+            }
             padding: 10px;
             background-color: white;
             .option.ms-Toggle {
@@ -14,6 +17,9 @@ body {
                 justify-content: flex-end;
                 label {
                     margin-left: 5px;
+                }
+                button:focus {
+                    outline: 1px solid black;
                 }
             }
         }

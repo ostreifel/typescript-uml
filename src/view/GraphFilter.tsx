@@ -3,13 +3,32 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { getNodes } from "./getNodes";
 
-const $filterOptionsContainer = $(".filter .options");
 export function registerFilterPane(cy: Cy.Core) {
-    $(".more-options").click(() => $(".filter .options").toggle());
-    ReactDOM.render(<GraphFilter cy={cy} />, $filterOptionsContainer[0]);
+    ReactDOM.render(<GraphFilter cy={cy} />, $(".filter-container")[0]);
 }
 
-export class GraphFilter extends React.Component<{ cy: Cy.Core }, {}> {
+class GraphFilter extends React.Component<{ cy: Cy.Core }, {showOptions: boolean}> {
+    constructor(props) {
+        super(props);
+        this.state = {showOptions: false};
+    }
+    public render() {
+        return <div className="filter">
+            <button accessKey="f" title="Filter (alt+f)" onClick={this.toggleOptions.bind(this)}>
+                <img src="./img/filter.png" alt="filter" width="16" />
+            </button>
+            <GraphOptions cy={this.props.cy} className={this.state.showOptions ? "" : "hidden"}/>
+        </div>;
+    }
+    public toggleOptions() {
+        this.setState({showOptions: !this.state.showOptions});
+    }
+}
+
+class GraphOptions extends React.Component<
+    { cy: Cy.Core, className: string },
+    {}
+> {
     public shouldComponentUpdate() {
         return true;
     }
@@ -29,7 +48,7 @@ export class GraphFilter extends React.Component<{ cy: Cy.Core }, {}> {
                 onChanged={(checked) => this.onChange(type, checked)}
             />,
         );
-        return <div>
+        return <div className={`options ${this.props.className}`}>
             {types}
         </div>;
     }

@@ -41,7 +41,6 @@ class EdgeInfo extends React.Component<{ getData: (key: string) => any }, {}> {
         </div>;
     }
 }
-// tslint:disable-next-line:max-classes-per-file
 class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     public render() {
         const {fileName, line, column} = this.props.pos;
@@ -58,7 +57,6 @@ class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
 function showNode(node: Cy.NodeSingular) {
     ReactDom.render(<NodeInfo getData={node.data.bind(node)} />, infoElement);
 }
-// tslint:disable-next-line:max-classes-per-file
 class NodeInfo extends React.Component<{ getData: (key: string) => any }, {}> {
     public render() {
         const { getData } = this.props;
