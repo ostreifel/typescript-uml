@@ -85,10 +85,6 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
     public render() {
         const { edge } = this.props;
         const getData = edge.data.bind(edge);
-        synthenticSelection = true;
-        edge.source().select();
-        edge.target().select();
-        synthenticSelection = false;
         const references: IDiagramFilePosition[] = getData("references");
         return <div className="edge">
             <div>
