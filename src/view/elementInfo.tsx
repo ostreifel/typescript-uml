@@ -3,7 +3,6 @@ import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { IDiagramFilePosition } from "../diagram/DiagramModel";
-import { getEdges } from "./getEles";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
 let cy: Cy.Core;
@@ -27,9 +26,9 @@ function showElementInfo(e: Cy.EventObject) {
     ) {
         selectOnly(target);
         if (target.isNode()) {
-            showNode(target as Cy.NodeSingular);
+            showNode(target as Cy.NodeCollection);
         } else if (target.isEdge()) {
-            showEdge(target as Cy.EdgeSingular);
+            showEdge(target as Cy.EdgeCollection);
         }
     } else {
         hide();
@@ -50,7 +49,7 @@ function hide() {
     cy.elements().unselect();
     synthenticSelection = false;
 }
-function showEdge(edge: Cy.EdgeSingular) {
+function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
 }
 function posName({fileName, line, column}: IDiagramFilePosition): string {
@@ -60,6 +59,7 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
     public render() {
         return <a href="#"
             onClick={() => this.selectNode()}
+            title={this.props.node.id()}
         >
             {this.props.node.data("name")}
         </a>;
@@ -68,7 +68,7 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
         this.props.node.trigger("select");
     }
 }
-class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
+class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
     public render() {
         const { edge } = this.props;
         const getData = edge.data.bind(edge);
@@ -100,19 +100,18 @@ class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     }
 }
 
-function showNode(node: Cy.NodeSingular) {
+function showNode(node: Cy.NodeCollection) {
     ReactDom.render(<NodeInfo node={node} />, infoElement);
 }
-class NodeInfo extends React.Component<{ node: Cy.NodeSingular }, {}> {
+class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
     public render() {
         const { node } = this.props;
         const getData = node.data.bind(node);
-        const referencing = getEdges(cy.edges(), (e) => e.target().id() === node.id());
-        const references = getEdges(cy.edges(), (e) => e.source().id() === node.id());
         synthenticSelection = true;
-        referencing.select();
-        references.select();
+        node.connectedEdges().select();
         synthenticSelection = false;
+        const inEdges = node.incomers().edges("");
+        const outEdges = node.outgoers().edges("");
         return <div className="node">
             <h1 className="name">{getData("name")}</h1>
             <div className="type">{getData("type")}</div>
@@ -120,6 +119,26 @@ class NodeInfo extends React.Component<{ node: Cy.NodeSingular }, {}> {
             {getData("lineCount") > 1 ?
                 <div>
                     {`${getData("lineCount")} lines`}
+                </div> :
+                null
+            }
+            {
+                inEdges.length > 0 ?
+                <div className="reference-group references-to-group">
+                    <h2>Referenced By Nodes</h2>
+                    <div className="references">
+                        {inEdges.map((e) => <NodeLink node={e.source()} />)}
+                    </div>
+                </div> :
+                null
+            }
+            {
+                outEdges.length > 0 ?
+                <div className="reference-group references-from-group">
+                    <h2>References Nodes</h2>
+                    <div className="references">
+                        {outEdges.map((e) => <NodeLink node={e.target()} />)}
+                    </div>
                 </div> :
                 null
             }

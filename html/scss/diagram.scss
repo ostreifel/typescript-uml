@@ -33,7 +33,7 @@ body {
         position: absolute;
         bottom: 0px;
         right: 0px;
-        max-height: 300px;
+        max-height: 50vh;
         max-width: 300px;
         overflow: auto;
         .node, .edge {
@@ -43,7 +43,16 @@ body {
         .node {
             .name {
                 margin: 0;
-                font-size: 1em;
+                font-size: 1.1em;
+            }
+            .reference-group {
+                h2 {
+                    margin: 0;
+                    font-size: 1em;
+                }
+                .references a {
+                    display: block;
+                }
             }
         }
         .edge {
