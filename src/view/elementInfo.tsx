@@ -53,6 +53,21 @@ function hide() {
 function showEdge(edge: Cy.EdgeSingular) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
 }
+function posName({fileName, line, column}: IDiagramFilePosition): string {
+    return `${path.basename(fileName)}:${line}:${column}`;
+}
+class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
+    public render() {
+        return <a href="#"
+            onClick={() => this.selectNode()}
+        >
+            {this.props.node.data("name")}
+        </a>;
+    }
+    private selectNode() {
+        this.props.node.trigger("select");
+    }
+}
 class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
     public render() {
         const { edge } = this.props;
@@ -63,7 +78,11 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
         synthenticSelection = false;
         const references: IDiagramFilePosition[] = getData("references");
         return <div className="edge">
-            <div>{`${edge.source().data("name")} to ${edge.target().data("name")}`}</div>
+            <div>
+                <NodeLink node={edge.source()} />
+                {" to "}
+                <NodeLink node={edge.target()} />
+            </div>
             <div>{`${getData("weight")} references`}</div>
             {references.map((r) => <PositionLink pos={r} />)}
         </div>;
@@ -71,9 +90,8 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
 }
 class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     public render() {
-        const {fileName, line, column} = this.props.pos;
         return <a className="line" onClick={this.focusLine.bind(this)} href="#">
-            {`${path.basename(fileName)}:${line}:${column}`}
+            {posName(this.props.pos)}
         </a>;
     }
     private focusLine() {
