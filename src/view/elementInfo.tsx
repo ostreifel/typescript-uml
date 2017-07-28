@@ -8,6 +8,7 @@ import { getEdges } from "./getEles";
 const infoElement = document.getElementsByClassName("element-info")[0];
 let cy: Cy.Core;
 let synthenticSelection = false;
+let selected: string;
 export function registerInfoPane(
     cy2: Cy.Core,
 ) {
@@ -17,8 +18,14 @@ export function registerInfoPane(
 
 function showElementInfo(e: Cy.EventObject) {
     const target: Cy.CollectionElements = e.target;
+    if (synthenticSelection) {
+        return;
+    }
 
-    if ((e.type as Cy.CollectionEventName) === "select" && !synthenticSelection) {
+    if (
+        (e.type as Cy.CollectionEventName) === "select" &&
+        selected !== target.id()
+    ) {
         selectOnly(target);
         if (target.isNode()) {
             showNode(target as Cy.NodeSingular);
@@ -30,6 +37,7 @@ function showElementInfo(e: Cy.EventObject) {
     }
 }
 function selectOnly(ele: Cy.CollectionElements) {
+    selected = ele.id();
     synthenticSelection = true;
     cy.elements().unselect();
     ele.select();
@@ -40,12 +48,17 @@ function hide() {
     infoElement.innerHTML = "";
 }
 function showEdge(edge: Cy.EdgeSingular) {
-    ReactDom.render(<EdgeInfo getData={edge.data.bind(edge)} />, infoElement);
+    ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
 }
-class EdgeInfo extends React.Component<{ getData: (key: string) => any }, {}> {
+class EdgeInfo extends React.Component<{ edge: Cy.EdgeSingular }, {}> {
     public render() {
-        const references: IDiagramFilePosition[] = this.props.getData("references");
-        const { getData } = this.props;
+        const { edge } = this.props;
+        const getData = edge.data.bind(edge);
+        synthenticSelection = true;
+        edge.source().select();
+        edge.target().select();
+        synthenticSelection = false;
+        const references: IDiagramFilePosition[] = getData("references");
         return <div className="edge">
             <div>{`${getData("weight")} references`}</div>
             {references.map((r) => <PositionLink pos={r} />)}
@@ -66,13 +79,14 @@ class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
 }
 
 function showNode(node: Cy.NodeSingular) {
-    ReactDom.render(<NodeInfo getData={node.data.bind(node)} />, infoElement);
+    ReactDom.render(<NodeInfo node={node} />, infoElement);
 }
-class NodeInfo extends React.Component<{ getData: (key: string) => any }, {}> {
+class NodeInfo extends React.Component<{ node: Cy.NodeSingular }, {}> {
     public render() {
-        const { getData } = this.props;
-        const referencing = getEdges(cy.edges(), (e) => e.target().id() === getData("id"));
-        const references = getEdges(cy.edges(), (e) => e.source().id() === getData("id"));
+        const { node } = this.props;
+        const getData = node.data.bind(node);
+        const referencing = getEdges(cy.edges(), (e) => e.target().id() === node.id());
+        const references = getEdges(cy.edges(), (e) => e.source().id() === node.id());
         synthenticSelection = true;
         referencing.select();
         references.select();
