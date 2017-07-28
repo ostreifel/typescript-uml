@@ -120,4 +120,4 @@ function loadInitial() {
     const elements: Cy.ElementDefinition[] = getModels(filePath);
     updateUI(filePath, elements, (eles) => boxGridLayout(eles));
 }
-setTimeout(loadInitial, 0);
+loadInitial();

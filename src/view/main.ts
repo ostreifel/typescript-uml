@@ -19,14 +19,15 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         show: false,
     });
+    mainWindow.maximize();
+    mainWindow.setMenu(null);
+
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
         pathname: path.join(extensionPath, "html", "diagram.html"),
         protocol: "file:",
         slashes: true,
     }));
-    mainWindow.maximize();
-    mainWindow.setMenu(null);
 
     mainWindow.once("ready-to-show", () => {
         mainWindow.show();
