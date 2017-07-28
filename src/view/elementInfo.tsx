@@ -3,18 +3,23 @@ import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { IDiagramFilePosition } from "../diagram/DiagramModel";
+import { getEdges } from "./getEles";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
+let cy: Cy.Core;
+let synthenticSelection = false;
 export function registerInfoPane(
-    on: (events: Cy.EventNames, selector: Cy.Selector, handler: Cy.EventHandler) => void,
+    cy2: Cy.Core,
 ) {
-    on("select unselect", "node, edge", showElementInfo);
+    cy2.on("select unselect", "node, edge", showElementInfo);
+    cy = cy2;
 }
 
 function showElementInfo(e: Cy.EventObject) {
-    const target: Cy.SingularData = e.target;
+    const target: Cy.CollectionElements = e.target;
 
-    if ((e.type as Cy.CollectionEventName) === "select") {
+    if ((e.type as Cy.CollectionEventName) === "select" && !synthenticSelection) {
+        selectOnly(target);
         if (target.isNode()) {
             showNode(target as Cy.NodeSingular);
         } else if (target.isEdge()) {
@@ -23,6 +28,12 @@ function showElementInfo(e: Cy.EventObject) {
     } else {
         hide();
     }
+}
+function selectOnly(ele: Cy.CollectionElements) {
+    synthenticSelection = true;
+    cy.elements().unselect();
+    ele.select();
+    synthenticSelection = false;
 }
 
 function hide() {
@@ -60,10 +71,16 @@ function showNode(node: Cy.NodeSingular) {
 class NodeInfo extends React.Component<{ getData: (key: string) => any }, {}> {
     public render() {
         const { getData } = this.props;
+        const referencing = getEdges(cy.edges(), (e) => e.target().id() === getData("id"));
+        const references = getEdges(cy.edges(), (e) => e.source().id() === getData("id"));
+        synthenticSelection = true;
+        referencing.select();
+        references.select();
+        synthenticSelection = false;
         return <div className="node">
             <h1 className="name">{getData("name")}</h1>
             <div className="type">{getData("type")}</div>
-            <PositionLink pos={this.props.getData("position")}/>
+            <PositionLink pos={getData("position")}/>
             {getData("lineCount") > 1 ?
                 <div>
                     {`${getData("lineCount")} lines`}

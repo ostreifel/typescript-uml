@@ -1,5 +1,5 @@
 
-import { getNodes } from "./getNodes";
+import { getNodes } from "./getEles";
 
 export function coseLayout(): Cy.CoseLayoutOptions {
     const layout = {

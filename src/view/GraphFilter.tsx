@@ -1,7 +1,7 @@
 import { Toggle } from "office-ui-fabric-react/lib/components/toggle";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { getNodes } from "./getNodes";
+import { getNodes } from "./getEles";
 
 export function registerFilterPane(cy: Cy.Core) {
     ReactDOM.render(<GraphFilter cy={cy} />, $(".filter-container")[0]);

@@ -103,7 +103,7 @@ function updateUI(
         container: $("#cy"),
         elements,
         boxSelectionEnabled: false,
-        selectionType: "single",
+        selectionType: "additive",
         style: getCyStyle(),
         layout: { name: "null" } as Cy.NullLayoutOptions,
     });
@@ -112,7 +112,7 @@ function updateUI(
     const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
     runLayout();
     $("#cy").dblclick(runLayout);
-    registerInfoPane(cy.on.bind(cy));
+    registerInfoPane(cy);
     registerFilterPane(cy);
 }
 function loadInitial() {
