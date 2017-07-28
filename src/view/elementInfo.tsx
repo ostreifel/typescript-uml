@@ -11,18 +11,21 @@ let selected: string;
 export function registerInfoPane(
     cy2: Cy.Core,
 ) {
-    cy2.on("select unselect", "node, edge", showElementInfo);
+    cy2.on("click", showElementInfo);
     cy = cy2;
 }
 
-function showElementInfo(e: Cy.EventObject) {
+/**
+ * @param supressToggle whether this was manually called by trigger
+ */
+function showElementInfo(e: Cy.EventObject, supressToggle?: boolean) {
     const target: Cy.CollectionElements = e.target;
     if (synthenticSelection) {
-        return;
+        return true;
     }
 
     if (
-        selected !== target.id()
+        target.id && selected !== target.id()
     ) {
         selectOnly(target);
         if (target.isNode()) {
@@ -33,6 +36,16 @@ function showElementInfo(e: Cy.EventObject) {
     } else {
         hide();
     }
+    // whatever the targets selection state is here will be toggled
+    // by the select event that fires after click events
+    if (!supressToggle && target.select) {
+        if (target.selected()) {
+            target.unselect();
+        } else {
+            target.select();
+        }
+    }
+    return false;
 }
 function selectOnly(ele: Cy.CollectionElements) {
     selected = ele.id();
@@ -65,7 +78,7 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
         </a>;
     }
     private selectNode() {
-        this.props.node.trigger("select");
+        this.props.node.trigger("click", [true as any]);
     }
 }
 class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
