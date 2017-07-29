@@ -13,6 +13,7 @@ export function registerFilterPane(
     initialState: IInitialGraphFilterState,
 ) {
     currentState = initialState;
+    $(".filter-container").html("");
     ReactDOM.render(<GraphFilter cy={cy} initialState={initialState} />, $(".filter-container")[0]);
 }
 export function getCurrentFilterState() {
@@ -40,14 +41,27 @@ class GraphFilter extends React.Component<IGraphFilterProps, {showOptions: boole
         </div>;
     }
     public toggleOptions() {
-        this.setState({showOptions: !this.state.showOptions});
+        currentState.showFilter = !this.state.showOptions;
+        this.setState({showOptions: currentState.showFilter});
     }
 }
 
+interface IGraphOptionProps {
+    cy: Cy.Core;
+    className: string;
+    initialTypeState: {[type: string]: boolean};
+ }
 class GraphOptions extends React.Component<
-    { cy: Cy.Core, className: string, initialTypeState: {[type: string]: boolean} },
+    IGraphOptionProps,
     {}
 > {
+    constructor(props: IGraphOptionProps) {
+        super(props);
+        this.updateForProps(props);
+    }
+    public componentWillReceiveProps?(nextProps: Readonly<IGraphOptionProps>): void {
+        this.updateForProps(nextProps);
+    }
     public render() {
         const typesSet: { [type: string]: void } = {};
         this.props.cy.nodes().forEach((ele) => {
@@ -68,6 +82,13 @@ class GraphOptions extends React.Component<
         return <div className={`options ${this.props.className}`}>
             {types}
         </div>;
+    }
+    private updateForProps(props: IGraphOptionProps) {
+        for (const type in props.initialTypeState) {
+            if (!props.initialTypeState[type]) {
+                this.onChange(type, false);
+            }
+        }
     }
     private onChange(type: string, show: boolean) {
         const nodes = getNodes(this.props.cy.nodes(), (node) => node.data("type") === type);
