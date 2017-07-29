@@ -57,30 +57,27 @@ interface IGridPos {
     col: number;
     row: number;
 }
+interface IGridPositions {
+    [id: string]: IGridPos;
+}
 export class BoxGridLayout {
-    private readonly positions: { [id: string]: IGridPos } = {};
     private readonly availableColumn: number[] = [];
 
     constructor(
         private readonly eles: Cy.NodeCollection,
-    ) {
-        this.calcPositions();
-    }
+    ) { }
 
     public getLayout(): Cy.GridLayoutOptions {
         const maxWidth = this.eles.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
         const padding = Math.max(0, 200 - maxWidth);
+        const positions = this.calcPositions();
         return {
             name: "grid",
-            position: this.positionForNode.bind(this),
+            position: (n: Cy.NodeSingular) => positions[n.id()],
             condense: true,
             avoidOverlapPadding: padding,
             fit: true,
         } as Cy.GridLayoutOptions;
-    }
-
-    private positionForNode(node: Cy.NodeSingular): IGridPos {
-        return this.positions[node.id()];
     }
 
     private getRow(posGrid: string[][], i: number) {
@@ -158,14 +155,16 @@ export class BoxGridLayout {
             colIdex = this.getAvailableColumn(rowIdx);
             this.calcPositionsFor(posGrid, nodeCollection, colIdex, rowIdx);
         }
+        const positions: IGridPositions = {};
         for (let i = 0; i < posGrid.length; i++) {
             const row = this.getRow(posGrid, i);
             for (let j = 0; j < row.length; j++) {
                 if (row[j]) {
-                    this.positions[row[j]] = { row: i, col: j };
+                    positions[row[j]] = { row: i, col: j };
                 }
             }
         }
+        return positions;
     }
 }
 
