@@ -113,9 +113,7 @@ function updateUI(
     }: ISaveData,
 ): Cy.Core {
     updateWindowTitle("Drawing graph...");
-    // tslint:disable-next-line:no-console
-    console.log("cyData", cyData);
-    const cy = cytoscape({ container: $("cy")[0], ...cyData });
+    const cy = cytoscape({ container: $("#cy")[0], ...cyData });
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
     registerFilterPane(cy, filterPanelState);
