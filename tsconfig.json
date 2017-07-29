@@ -15,6 +15,7 @@
         "outDir": "out",
         "rootDir": ".",
         "noUnusedLocals": true,
+        "noUnusedParameters": true,
         "jsx": "react"
     },
     "exclude": [

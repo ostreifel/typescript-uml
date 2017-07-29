@@ -33,7 +33,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
     }
 
-    public visitBlock(node: ts.Block): void {
+    public visitBlock(/*node: ts.Block*/): void {
         // skip
     }
 

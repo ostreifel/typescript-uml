@@ -3,14 +3,11 @@ import { remote } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
-import { registerInfoPane } from "./ElementInfo";
-import { registerFilterPane } from "./GraphFilter";
+import { getInfoPaneState, registerInfoPane } from "./ElementInfo";
+import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
     boxGridLayout,
-    getPositions,
-    INodePositions,
-    presetLayout,
 } from "./Layouts";
 import { getCyStyle } from "./style";
 
@@ -22,19 +19,21 @@ const fileFilters: Electron.FileFilter[] = [{
 
 interface ISaveData {
     fileFormatVersion: number;
-    elements: Cy.ElementDefinition[];
+    cyData: Cy.CytoscapeOptions;
     filePath: string;
-    positions: INodePositions;
+    infoPanelState: string;
+    filterPanelState: IInitialGraphFilterState;
 }
-function saveGraph(filePath: string, elements: Cy.ElementDefinition[], cy: Cy.Core) {
+function saveGraph(filePath: string, cy: Cy.Core) {
     const saveData: ISaveData = {
         fileFormatVersion: 1,
-        elements,
+        cyData: cy.json() as Cy.CytoscapeOptions,
+        infoPanelState: getInfoPaneState(),
+        filterPanelState: getCurrentFilterState(),
         filePath,
-        positions: getPositions(cy.nodes()),
     };
     const baseFileName = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1];
-    const defaultPath =  `${baseFileName}.${fileExtension}`;
+    const defaultPath = `${baseFileName}.${fileExtension}`;
     remote.dialog.showSaveDialog({
         filters: fileFilters,
         defaultPath,
@@ -53,13 +52,15 @@ function loadGraph() {
             return;
         }
         fs.readFile(filePath, (err, buffer: Buffer) => {
+            // tslint:disable-next-line:no-console
+            console.log(err);
             const dataStr = buffer.toString("utf-8");
-            const data = JSON.parse(dataStr);
-            updateUI(data.filePath, data.elements, () => presetLayout(data.positions));
+            const data: ISaveData = JSON.parse(dataStr);
+            updateUI(data);
         });
     });
 }
-function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy.Core) {
+function setMenuItems(filePath: string, cy: Cy.Core) {
     const menu = remote.Menu.buildFromTemplate([
         {
             label: "File",
@@ -67,7 +68,7 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
                 {
                     label: "Save",
                     accelerator: "CommandOrControl+S",
-                    click: () => saveGraph(filePath, elements, cy),
+                    click: () => saveGraph(filePath, cy),
                 },
                 {
                     label: "Open",
@@ -83,6 +84,11 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
                 { role: "togglefullscreen" },
                 { role: "reload" },
                 { role: "toggledevtools" },
+                {
+                    label: "Reset Layout",
+                    accelerator: "Alt+E",
+                    click: () => applyDefaultLayout(cy),
+                },
             ],
         },
     ]);
@@ -91,32 +97,52 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
 function updateWindowTitle(status: string) {
     remote.getCurrentWindow().setTitle(status);
 }
+
+function applyDefaultLayout(cy: Cy.Core) {
+    const currentTitle = remote.getCurrentWindow().getTitle();
+    updateWindowTitle("Computing layout...");
+    applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    updateWindowTitle(currentTitle);
+}
 function updateUI(
-    filePath: string,
-    elements: Cy.ElementDefinition[],
-    layout: (cy: Cy.NodeCollection) => Cy.LayoutOptions,
-) {
+    {
+        filePath,
+        filterPanelState,
+        infoPanelState,
+        cyData,
+    }: ISaveData,
+): Cy.Core {
     updateWindowTitle("Drawing graph...");
-    const cy = cytoscape({
-        container: $("#cy"),
+    // tslint:disable-next-line:no-console
+    console.log("cyData", cyData);
+    const cy = cytoscape({ container: $("cy")[0], ...cyData });
+    setMenuItems(filePath, cy);
+    registerInfoPane(cy, infoPanelState);
+    registerFilterPane(cy, filterPanelState);
+    updateWindowTitle(`${path.basename(filePath)} UML`);
+    return cy;
+}
+function loadInitial() {
+    const [, , , filePath] = remote.getGlobal("diagramArgs");
+    const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
+    const cyData: Cy.CytoscapeOptions = {
         elements,
         boxSelectionEnabled: false,
         selectionType: "additive",
         style: getCyStyle(),
         layout: { name: "null" } as Cy.NullLayoutOptions,
+    };
+    const cy = updateUI({
+        cyData,
+        fileFormatVersion: 1,
+        filePath,
+        filterPanelState: { showFilter: false, types: {} },
+        infoPanelState: "",
     });
-    setMenuItems(filePath, elements, cy);
-    updateWindowTitle("Computing layout...");
-    const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
-    runLayout();
-    $("#cy").dblclick(runLayout);
-    registerInfoPane(cy);
-    registerFilterPane(cy);
-    updateWindowTitle(`${path.basename(filePath)} UML`);
+    applyDefaultLayout(cy);
 }
-function loadInitial() {
-    const [, , , filePath] = remote.getGlobal("diagramArgs");
-    const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
-    updateUI(filePath, elements, (eles) => boxGridLayout(eles));
-}
+
+remote.getCurrentWindow().setMenu(remote.Menu.buildFromTemplate([
+    { role: "toggledevtools" },
+]));
 loadInitial();

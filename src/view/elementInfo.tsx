@@ -3,6 +3,7 @@ import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { IDiagramFilePosition } from "../diagram/DiagramModel";
+import { getNodes } from "./getEles";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
 let cy: Cy.Core;
@@ -10,9 +11,20 @@ let synthenticSelection = false;
 let selected: string;
 export function registerInfoPane(
     cy2: Cy.Core,
+    startSelect: string,
 ) {
     cy2.on("click", showElementInfo);
     cy = cy2;
+
+    if (startSelect) {
+        const node = getNodes(cy.nodes(), (n) => n.id() === startSelect);
+        node.trigger("click", [true as any]);
+    } else {
+        cy.trigger("click", [true]);
+    }
+}
+export function getInfoPaneState(): string {
+    return selected;
 }
 
 /**

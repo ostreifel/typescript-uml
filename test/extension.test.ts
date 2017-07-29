@@ -43,7 +43,7 @@ suite("Extension tests", function(this: ISuiteCallbackContext) {
 
     test("namespace graph nodes", function(this: ITestCallbackContext) {
         const filePath = toFilePath("namespace.ts");
-        const diagram = computeDiagramForFile(filePath);
+        const diagram = computeDiagramForFile(filePath, () => undefined);
         const nodes = diagram.filter((e) => (e as IDiagramNode).data.name) as IDiagramNode[];
         const nodeNames = nodes.map((n) => n.data.name);
         assert.deepEqual(["TestNamespace", "moduleVariable", "moduleFunction"], nodeNames);
@@ -51,7 +51,7 @@ suite("Extension tests", function(this: ISuiteCallbackContext) {
 
     test("namespace inheritance", function(this: ITestCallbackContext) {
         const filePath = toFilePath("namespace.ts");
-        const diagram = computeDiagramForFile(filePath);
+        const diagram = computeDiagramForFile(filePath, () => undefined);
         const nodes = diagram.filter((e) => (e as IDiagramNode).data.parent) as IDiagramNode[];
         const nodeNames = nodes.map((n) => n.data.name);
         assert.deepEqual(["moduleVariable", "moduleFunction"], nodeNames);
