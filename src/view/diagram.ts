@@ -91,14 +91,15 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
 function getModels(filePath: string) {
     return computeDiagramForFile(filePath);
 }
-function updateWindowTitle(filePath: string) {
-    remote.getCurrentWindow().setTitle(`${path.basename(filePath)} UML`);
+function updateWindowTitle(status: string) {
+    remote.getCurrentWindow().setTitle(status);
 }
 function updateUI(
     filePath: string,
     elements: Cy.ElementDefinition[],
     layout: (cy: Cy.NodeCollection) => Cy.LayoutOptions,
 ) {
+    updateWindowTitle("Drawing graph...");
     const cy = cytoscape({
         container: $("#cy"),
         elements,
@@ -108,15 +109,17 @@ function updateUI(
         layout: { name: "null" } as Cy.NullLayoutOptions,
     });
     setMenuItems(filePath, elements, cy);
-    updateWindowTitle(filePath);
+    updateWindowTitle("Computing layout...");
     const runLayout = () => applyLayout(cy.nodes(), layout(cy.nodes()));
     runLayout();
     $("#cy").dblclick(runLayout);
     registerInfoPane(cy);
     registerFilterPane(cy);
+    updateWindowTitle(`${path.basename(filePath)} UML`);
 }
 function loadInitial() {
     const [, , , filePath] = remote.getGlobal("diagramArgs");
+    updateWindowTitle("Walking file ast...");
     const elements: Cy.ElementDefinition[] = getModels(filePath);
     updateUI(filePath, elements, (eles) => boxGridLayout(eles));
 }
