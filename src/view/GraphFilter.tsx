@@ -26,7 +26,7 @@ interface IGraphFilterProps {
 class GraphFilter extends React.Component<IGraphFilterProps, {showOptions: boolean}> {
     constructor(props) {
         super(props);
-        this.state = {showOptions: props.initialState};
+        this.state = {showOptions: props.initialState.showFilter};
     }
     public render() {
         return <div className="filter">
@@ -60,7 +60,7 @@ class GraphOptions extends React.Component<
         const types = Object.keys(typesSet).sort().map((type) =>
             <Toggle
                 label={type}
-                defaultChecked={!(type in initialTypes) && initialTypes[type]}
+                defaultChecked={!(type in initialTypes) || initialTypes[type]}
                 className="option"
                 onChanged={(checked) => this.onChange(type, checked)}
             />,
