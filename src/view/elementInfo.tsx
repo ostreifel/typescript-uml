@@ -13,8 +13,8 @@ export function registerInfoPane(
     cy2: Cy.Core,
     startSelect: string,
 ) {
-    cy2.on("click", showElementInfo);
     cy = cy2;
+    cy.on("click", showElementInfo);
 
     if (startSelect) {
         const node = getNodes(cy.nodes(), (n) => n.id() === startSelect);
@@ -33,7 +33,7 @@ export function getInfoPaneState(): string {
 function showElementInfo(e: Cy.EventObject, supressToggle?: boolean) {
     const target: Cy.CollectionElements = e.target;
     if (synthenticSelection) {
-        return true;
+        return;
     }
 
     if (
@@ -57,7 +57,7 @@ function showElementInfo(e: Cy.EventObject, supressToggle?: boolean) {
             target.select();
         }
     }
-    return false;
+    return;
 }
 function selectOnly(ele: Cy.CollectionElements) {
     selected = ele.id();
@@ -122,15 +122,15 @@ class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
 }
 
 function showNode(node: Cy.NodeCollection) {
+    synthenticSelection = true;
+    node.connectedEdges().select();
+    synthenticSelection = false;
     ReactDom.render(<NodeInfo node={node} />, infoElement);
 }
 class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
     public render() {
         const { node } = this.props;
         const getData = node.data.bind(node);
-        synthenticSelection = true;
-        node.connectedEdges().select();
-        synthenticSelection = false;
         const inEdges = node.incomers().edges("");
         const outEdges = node.outgoers().edges("");
         return <div className="node">

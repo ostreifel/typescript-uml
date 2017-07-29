@@ -22,16 +22,21 @@ const fileFilters: Electron.FileFilter[] = [{
 
 interface ISaveData {
     fileFormatVersion: number;
-    cyData: Cy.CytoscapeOptions;
+    elements: Cy.ElementDefinition[];
     positions: INodePositions;
     filePath: string;
     infoPanelState: string;
     filterPanelState: IInitialGraphFilterState;
 }
+
+function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
+    const elements: Cy.ElementsDefinition = (cy.json() as Cy.CytoscapeOptions).elements as any;
+    return [...elements.nodes, ...elements.edges].map((e) => ({ data: e.data }));
+}
 function saveGraph(filePath: string, cy: Cy.Core) {
     const saveData: ISaveData = {
         fileFormatVersion: 1,
-        cyData: cy.json() as Cy.CytoscapeOptions,
+        elements: getElements(cy),
         positions: getPositions(cy.nodes()),
         infoPanelState: getInfoPaneState(),
         filterPanelState: getCurrentFilterState(),
@@ -115,11 +120,17 @@ function updateUI(
         filePath,
         filterPanelState,
         infoPanelState,
-        cyData,
+        elements,
     }: ISaveData,
 ): Cy.Core {
     updateWindowTitle("Drawing graph...");
-    const cy = cytoscape({ container: $("#cy")[0], ...cyData });
+    const cy = cytoscape({
+        container: $("#cy")[0], elements,
+        boxSelectionEnabled: false,
+        selectionType: "additive",
+        style: getCyStyle(),
+        layout: { name: "null" } as Cy.NullLayoutOptions,
+    });
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
     registerFilterPane(cy, filterPanelState);
@@ -129,15 +140,8 @@ function updateUI(
 function loadInitial() {
     const [, , , filePath] = remote.getGlobal("diagramArgs");
     const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
-    const cyData: Cy.CytoscapeOptions = {
-        elements,
-        boxSelectionEnabled: false,
-        selectionType: "additive",
-        style: getCyStyle(),
-        layout: { name: "null" } as Cy.NullLayoutOptions,
-    };
     const cy = updateUI({
-        cyData,
+        elements,
         filePath,
         filterPanelState: { showFilter: false, types: {} },
         infoPanelState: "",
