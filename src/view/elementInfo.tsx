@@ -122,7 +122,7 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
         const inEdges = node.incomers().edges("");
         const outEdges = node.outgoers().edges("");
         return <div className="node">
-            <h1 className="name">{getData("name")}</h1>
+            <h1 className="name" title={getData("id")}>{getData("name")}</h1>
             <div className="type">{getData("type")}</div>
             <PositionLink pos={getData("position")}/>
             {getData("lineCount") > 1 ?

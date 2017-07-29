@@ -66,7 +66,7 @@ export class BoxGridLayout {
     private readonly availableColumn: number[] = [];
 
     constructor(
-        eles: Cy.NodeCollection,
+        private readonly eles: Cy.NodeCollection,
     ) {
         this.elementCount = getNodes(eles, (element) => !element.isParent()).length;
         eles.nodes(":parent").map((p) => p.id()).forEach((parentId) => {
@@ -81,14 +81,15 @@ export class BoxGridLayout {
     }
 
     public getLayout(): Cy.GridLayoutOptions {
+        const maxWidth = this.eles.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
+        const padding = Math.max(0, 200 - maxWidth);
         return {
             name: "grid",
             position: this.position.bind(this),
             rows: this.maxRow(),
             cols: this.maxCol(),
-            // nodeDimensionsIncludeLabels: true,
             condense: true,
-            avoidOverlapPadding: 140,
+            avoidOverlapPadding: padding,
             fit: true,
         } as Cy.GridLayoutOptions;
     }

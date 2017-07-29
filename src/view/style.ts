@@ -14,7 +14,7 @@ export function getCyStyle(): any {
             "text-valign": "data(valign)",
             "border-color": "black",
             "border-opacity": "1",
-            "border-width": "1",
+            "border-width": "3",
             "border-style": "solid",
         })
         .selector("edge")
