@@ -124,7 +124,7 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
         return <div className="node">
             <h1 className="name" title={getData("id")}>{getData("name")}</h1>
             <div className="type">{getData("type")}</div>
-            <PositionLink pos={getData("position")}/>
+            <PositionLink pos={getData("filePosition")}/>
             {getData("lineCount") > 1 ?
                 <div>
                     {`${getData("lineCount")} lines`}

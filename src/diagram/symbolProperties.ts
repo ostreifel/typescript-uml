@@ -48,18 +48,6 @@ function getShape(symbol: ts.Symbol): Cy.Css.NodeShape {
     return "ellipse";
 }
 
-function getValign(symbol: ts.Symbol): "top" | "center" | "bottom" {
-    if (
-        symbol.flags & ts.SymbolFlags.Class ||
-        symbol.flags & ts.SymbolFlags.Enum ||
-        symbol.flags & ts.SymbolFlags.Interface ||
-        symbol.flags & ts.SymbolFlags.Module
-    ) {
-        return "top";
-    }
-    return "center";
-}
-
 function getType(symbol: ts.Symbol): string {
     if (symbol.flags & ts.SymbolFlags.Class) {
         return "class";
@@ -90,14 +78,11 @@ function getType(symbol: ts.Symbol): string {
 }
 export function getPositionProperties(symbol: ts.Symbol) {
     let nodeSize = 30;
-    if (!symbol.declarations || !symbol.declarations.length) {
-        return {nodeSize};
-    }
     const declaration = symbol.declarations[0];
     const sourceFile = declaration.getSourceFile();
     const startLineChar = sourceFile.getLineAndCharacterOfPosition(declaration.getStart());
     const endLine = sourceFile.getLineAndCharacterOfPosition(declaration.getEnd()).line + 1;
-    const position: IDiagramFilePosition = {
+    const filePosition: IDiagramFilePosition = {
         fileName: sourceFile.fileName,
         line: startLineChar.line + 1,
         column: startLineChar.character + 1,
@@ -108,7 +93,7 @@ export function getPositionProperties(symbol: ts.Symbol) {
         nodeSize = 30 + Math.ceil(Math.pow(lineCount, 0.60) * 5);
     }
     return {
-        position,
+        filePosition,
         lineCount,
         nodeSize,
     };
@@ -118,7 +103,6 @@ export function getSymbolProperties(symbol: ts.Symbol) {
     return {
         color: getColor(symbol),
         shape: getShape(symbol),
-        valign: getValign(symbol),
         type: getType(symbol),
         ...getPositionProperties(symbol),
     };

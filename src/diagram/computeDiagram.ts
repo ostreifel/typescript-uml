@@ -112,7 +112,7 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol, pos
     }
     const sourceFile = fromNode.getSourceFile();
     const lineChar = sourceFile.getLineAndCharacterOfPosition(pos);
-    return {
+    const edge: IDiagramEdge = {
         data: {
             id: `${fromId}-${toId}`,
             source: fromId,
@@ -127,6 +127,7 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol, pos
             weight: 1,
         },
     };
+    return edge;
 }
 
 function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEdge[] {
@@ -175,7 +176,6 @@ function computeDiagram(
     walker.walk(walker.sourceFile);
     const validNodes: IGraphNode[] = [];
     setStatus("Computing nodes...");
-    // Add nodes
     for (const graphNode of walker.graphNodes) {
         const id = getSymbolId(ctx, graphNode.symbol);
         if (id) {
@@ -184,12 +184,20 @@ function computeDiagram(
                     id,
                     name: graphNode.symbol.getName(),
                     parent: getParentId(ctx, graphNode.symbol),
+                    valign: "center",
                     ...getSymbolProperties(graphNode.symbol),
                 },
             };
             elements.push(node);
             ctx.nodes[node.data.id] = node;
             validNodes.push(graphNode);
+        }
+    }
+    setStatus("Updating parent texts...");
+    for (const id in ctx.nodes) {
+        const { parent } = ctx.nodes[id].data;
+        if (parent) {
+            ctx.nodes[parent].data.valign = "top";
         }
     }
     setStatus("Computing edges...");
