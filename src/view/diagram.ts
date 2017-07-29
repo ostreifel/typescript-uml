@@ -88,9 +88,6 @@ function setMenuItems(filePath: string, elements: Cy.ElementDefinition[], cy: Cy
     ]);
     remote.getCurrentWindow().setMenu(menu);
 }
-function getModels(filePath: string) {
-    return computeDiagramForFile(filePath);
-}
 function updateWindowTitle(status: string) {
     remote.getCurrentWindow().setTitle(status);
 }
@@ -119,8 +116,7 @@ function updateUI(
 }
 function loadInitial() {
     const [, , , filePath] = remote.getGlobal("diagramArgs");
-    updateWindowTitle("Walking file ast...");
-    const elements: Cy.ElementDefinition[] = getModels(filePath);
+    const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
     updateUI(filePath, elements, (eles) => boxGridLayout(eles));
 }
 loadInitial();

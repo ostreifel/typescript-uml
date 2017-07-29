@@ -166,12 +166,15 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
 
 function computeDiagram(
     ctx: IReferencesContext,
+    setStatus: (status: string) => void,
 ): IDiagramElement[] {
     const elements: IDiagramElement[] = [];
 
+    setStatus("Walking ast...");
     const walker = new NodeReferenceWalker(ctx.sourceFile);
     walker.walk(walker.sourceFile);
     const validNodes: IGraphNode[] = [];
+    setStatus("Computing nodes...");
     // Add nodes
     for (const graphNode of walker.graphNodes) {
         const id = getSymbolId(ctx, graphNode.symbol);
@@ -189,11 +192,12 @@ function computeDiagram(
             validNodes.push(graphNode);
         }
     }
+    setStatus("Computing edges...");
     elements.push(...getEdges(ctx, validNodes));
     return elements;
 }
 
-export function computeDiagramForFile(fileName: string): IDiagramElement[] {
+export function computeDiagramForFile(fileName: string, setStatus: (status: string) => void): IDiagramElement[] {
     const ctx: IReferencesContext = getFileContext(fileName);
-    return computeDiagram(ctx);
+    return computeDiagram(ctx, setStatus);
 }
