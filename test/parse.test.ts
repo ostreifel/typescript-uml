@@ -16,7 +16,7 @@ import { IDiagramNode } from "../src/diagram/DiagramModel";
 import { NodeReferenceWalker } from "../src/diagram/NodeReferenceWalker";
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Extension tests", function(this: ISuiteCallbackContext) {
+suite("Parse tests", function(this: ISuiteCallbackContext) {
     const testDataPath = path.join(path.dirname(this["file"]), "..", "..", "test", "testData");
     function toFilePath(fileName: string) {
         return path.join(testDataPath, fileName);
