@@ -61,8 +61,6 @@ interface IGridPositions {
     [id: string]: IGridPos;
 }
 export class BoxGridLayout {
-    private readonly availableColumn: number[] = [];
-
     constructor(
         private readonly eles: Cy.NodeCollection,
     ) { }
@@ -71,9 +69,10 @@ export class BoxGridLayout {
         const maxWidth = this.eles.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
         const padding = Math.max(0, 200 - maxWidth);
         const positions = this.calcPositions();
+        const position = (n: Cy.NodeSingular) => positions[n.id()];
         return {
             name: "grid",
-            position: (n: Cy.NodeSingular) => positions[n.id()],
+            position: position as any, // typing here is wrong
             condense: true,
             avoidOverlapPadding: padding,
             fit: true,
@@ -87,18 +86,18 @@ export class BoxGridLayout {
         return posGrid[i];
     }
 
-    private setAvailableColumn(row: number, col: number) {
-        const val = this.availableColumn[row] || 0;
+    private setAvailableColumn(availableColumn: number[], row: number, col: number) {
+        const val = availableColumn[row] || 0;
         if (val < col) {
-            this.availableColumn[row] = col;
+            availableColumn[row] = col;
         }
     }
 
-    private getAvailableColumn(row?: number): number {
-        if (typeof row !== "number" || !this.availableColumn[row]) {
+    private getAvailableColumn(availableColumn: number[], row?: number): number {
+        if (typeof row !== "number" || !availableColumn[row]) {
             return 0;
         }
-        return this.availableColumn[row];
+        return availableColumn[row];
     }
 
     private getWidth(nodeCount: number): number {
@@ -107,11 +106,12 @@ export class BoxGridLayout {
 
     private calcPositionsFor(
         posGrid: string[][],
-        eles: Cy.NodeCollection,
+        availableColumns: number[],
+        ids: string[],
         startCol: number,
         startRow: number,
     ): void {
-        const wrapThreshold = this.getWidth(eles.length);
+        const wrapThreshold = this.getWidth(ids.length);
         let col = 0;
         let row = 0;
         function next() {
@@ -121,16 +121,13 @@ export class BoxGridLayout {
                 row++;
             }
         }
-        for (let i = 0; i < eles.length; i++) {
-            this.getRow(posGrid, row + startRow)[col + startCol] = eles[i].id();
-            this.setAvailableColumn(row + startRow, startCol + wrapThreshold);
+        for (const id of ids) {
+            this.getRow(posGrid, row + startRow)[col + startCol] = id;
+            this.setAvailableColumn(availableColumns, row + startRow, startCol + wrapThreshold);
             next();
         }
     }
     private calcPositions() {
-        const elementCount = getNodes(this.eles, (element) => !element.isParent()).length;
-        const wrapThreshold = this.getWidth(elementCount);
-
         const parented: { [parentId: string]: Cy.NodeCollection } = {};
         this.eles.nodes(":parent").map((p) => p.id()).forEach((parentId) => {
             parented[parentId] = getNodes(this.eles, (element: Cy.NodeSingular) => {
@@ -144,16 +141,22 @@ export class BoxGridLayout {
         for (const parentId in parented) {
             nodeCollections.push(parented[parentId]);
         }
+
+        // thresholds for boundries
+        const elementCount = getNodes(this.eles, (element) => !element.isParent()).length;
+        const wrapThreshold = this.getWidth(elementCount);
         let rowIdx = 0;
         let colIdex = 0;
         const posGrid: string[][] = [];
+        const availableColumns: number[] = [];
         for (const nodeCollection of nodeCollections) {
             const width = this.getWidth(nodeCollection.length);
-            while (this.getAvailableColumn(rowIdx) + width > wrapThreshold) {
+            while (this.getAvailableColumn(availableColumns, rowIdx) + width > wrapThreshold) {
                 rowIdx++;
             }
-            colIdex = this.getAvailableColumn(rowIdx);
-            this.calcPositionsFor(posGrid, nodeCollection, colIdex, rowIdx);
+            colIdex = this.getAvailableColumn(availableColumns, rowIdx);
+            const ids: string[] = nodeCollection.map((n) => n.id());
+            this.calcPositionsFor(posGrid, availableColumns, ids, colIdex, rowIdx);
         }
         const positions: IGridPositions = {};
         for (let i = 0; i < posGrid.length; i++) {
