@@ -20,21 +20,34 @@ export function getCyStyle(): any {
         .selector("edge")
         .css({
             "curve-style": "bezier",
-            "line-color": "#ccc",
-            "target-arrow-color": "#ccc",
+            "line-color": "white",
+            "target-arrow-color": "white",
             "target-arrow-shape": "triangle",
             "width": "data(weight)",
         })
         .selector(":selected")
         .css({
-            // "background-color": "black",
-            "line-color": "red",
-            "source-arrow-color": "red",
-            "target-arrow-color": "red",
+            // dark yellow
+            "line-color": "#c4c400",
+            "source-arrow-color": "#c4c400",
+            "target-arrow-color": "#c4c400",
             "border-color": "white",
             "border-opacity": "1",
             "border-width": "5",
             "border-style": "solid",
+        })
+        .selector(".outgoing")
+        .css({
+            // dark orange
+            "line-color": "#d68f00",
+            "source-arrow-color": "#d68f00",
+            "target-arrow-color": "#d68f00",
+        })
+        .selector(".incoming")
+        .css({
+            "line-color": "red",
+            "source-arrow-color": "red",
+            "target-arrow-color": "red",
         })
         .selector(".faded")
         .css({

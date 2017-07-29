@@ -7,8 +7,50 @@ import { getNodes } from "./getEles";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
 let cy: Cy.Core;
-let synthenticSelection = false;
-let selected: string;
+
+class GraphHighlights {
+    private target?: Cy.CollectionSelection & Cy.Singular;
+    private incoming?: Cy.EdgeCollection;
+    private outgoing?: Cy.EdgeCollection;
+    public unselect() {
+        if (this.target) {
+            this.target.unselect();
+            this.target = null;
+        }
+        if (this.incoming) {
+            this.incoming.removeClass("incoming");
+            this.incoming = null;
+        }
+        if (this.outgoing) {
+            this.outgoing.removeClass("outgoing");
+            this.outgoing = null;
+        }
+    }
+    public selectNode(node: Cy.NodeCollection, syntheticEvent: boolean) {
+        this.unselect();
+        this.incoming = node.incomers().edges("");
+        this.incoming.addClass("incoming");
+        this.outgoing = node.outgoers().edges("");
+        this.outgoing.addClass("outgoing");
+        this.selectTarget(node, syntheticEvent);
+    }
+    public selectEdge(edge: Cy.EdgeCollection, syntheticEvent: boolean) {
+        this.unselect();
+        this.selectTarget(edge, syntheticEvent);
+    }
+    public getSelectedId(): string {
+        return this.target ? this.target.id() : "";
+    }
+    private selectTarget(target: Cy.CollectionSelection & Cy.Singular, syntheticEvent: boolean) {
+        if (syntheticEvent) {
+            // the click even will select on its own normally
+            target.select();
+        }
+        this.target = target;
+    }
+}
+const highlighted = new GraphHighlights();
+
 export function registerInfoPane(
     cy2: Cy.Core,
     startSelect: string,
@@ -24,61 +66,39 @@ export function registerInfoPane(
     }
 }
 export function getInfoPaneState(): string {
-    return selected;
+    return highlighted.getSelectedId();
 }
 
 /**
  * @param supressToggle whether this was manually called by trigger
  */
-function showElementInfo(e: Cy.EventObject, supressToggle?: boolean) {
+function showElementInfo(e: Cy.EventObject, syntheticEvent?: boolean) {
     const target: Cy.CollectionElements = e.target;
-    if (synthenticSelection) {
-        return;
-    }
 
     if (
-        target.id && selected !== target.id()
+        target.id && highlighted.getSelectedId() !== target.id()
     ) {
-        selectOnly(target);
         if (target.isNode()) {
-            showNode(target as Cy.NodeCollection);
+            const node = target as Cy.NodeCollection;
+            highlighted.selectNode(node, syntheticEvent);
+            showNode(node);
         } else if (target.isEdge()) {
-            showEdge(target as Cy.EdgeCollection);
+            const edge = target as Cy.EdgeCollection;
+            highlighted.selectEdge(edge, syntheticEvent);
+            showEdge(edge);
         }
     } else {
         hide();
     }
-    // whatever the targets selection state is here will be toggled
-    // by the select event that fires after click events
-    if (!supressToggle && target.select) {
-        if (target.selected()) {
-            target.unselect();
-        } else {
-            target.select();
-        }
-    }
     return;
-}
-function selectOnly(ele: Cy.CollectionElements) {
-    selected = ele.id();
-    synthenticSelection = true;
-    cy.elements().unselect();
-    ele.select();
-    synthenticSelection = false;
 }
 
 function hide() {
     infoElement.innerHTML = "";
-    selected = "";
-    synthenticSelection = true;
-    cy.elements().unselect();
-    synthenticSelection = false;
+    highlighted.unselect();
 }
 function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
-}
-function posName({fileName, line, column}: IDiagramFilePosition): string {
-    return `${path.basename(fileName)}:${line}:${column}`;
 }
 class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
     public render() {
@@ -112,19 +132,19 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
 class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     public render() {
         return <a className="line" onClick={this.focusLine.bind(this)} href="#">
-            {posName(this.props.pos)}
+            {this.posName(this.props.pos)}
         </a>;
     }
     private focusLine() {
         const {fileName, line, column} = this.props.pos;
         spawn("code", ["-g", `${fileName}:${line}:${column}`]);
     }
+    private posName({fileName, line, column}: IDiagramFilePosition): string {
+        return `${path.basename(fileName)}:${line}:${column}`;
+    }
 }
 
 function showNode(node: Cy.NodeCollection) {
-    synthenticSelection = true;
-    node.connectedEdges().select();
-    synthenticSelection = false;
     ReactDom.render(<NodeInfo node={node} />, infoElement);
 }
 class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
