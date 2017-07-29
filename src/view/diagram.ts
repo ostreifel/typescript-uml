@@ -8,6 +8,9 @@ import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } f
 import {
     applyLayout,
     boxGridLayout,
+    getPositions,
+    INodePositions,
+    presetLayout,
 } from "./Layouts";
 import { getCyStyle } from "./style";
 
@@ -20,6 +23,7 @@ const fileFilters: Electron.FileFilter[] = [{
 interface ISaveData {
     fileFormatVersion: number;
     cyData: Cy.CytoscapeOptions;
+    positions: INodePositions;
     filePath: string;
     infoPanelState: string;
     filterPanelState: IInitialGraphFilterState;
@@ -28,6 +32,7 @@ function saveGraph(filePath: string, cy: Cy.Core) {
     const saveData: ISaveData = {
         fileFormatVersion: 1,
         cyData: cy.json() as Cy.CytoscapeOptions,
+        positions: getPositions(cy.nodes()),
         infoPanelState: getInfoPaneState(),
         filterPanelState: getCurrentFilterState(),
         filePath,
@@ -56,7 +61,8 @@ function loadGraph() {
             console.log(err);
             const dataStr = buffer.toString("utf-8");
             const data: ISaveData = JSON.parse(dataStr);
-            updateUI(data);
+            const cy = updateUI(data);
+            applyLayout(cy.nodes(), presetLayout(data.positions));
         });
     });
 }
@@ -132,11 +138,10 @@ function loadInitial() {
     };
     const cy = updateUI({
         cyData,
-        fileFormatVersion: 1,
         filePath,
         filterPanelState: { showFilter: false, types: {} },
         infoPanelState: "",
-    });
+    } as ISaveData);
     applyDefaultLayout(cy);
 }
 
