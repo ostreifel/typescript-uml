@@ -58,25 +58,12 @@ interface IGridPos {
     row: number;
 }
 export class BoxGridLayout {
-    private readonly elementCount: number;
-    private readonly parented: { [parentId: string]: Cy.NodeCollection } = {};
-    private readonly unparented: Cy.NodeCollection;
     private readonly positions: { [id: string]: IGridPos } = {};
-    private readonly posGrid: string[][] = [];
     private readonly availableColumn: number[] = [];
 
     constructor(
         private readonly eles: Cy.NodeCollection,
     ) {
-        this.elementCount = getNodes(eles, (element) => !element.isParent()).length;
-        eles.nodes(":parent").map((p) => p.id()).forEach((parentId) => {
-            this.parented[parentId] = getNodes(eles, (element: Cy.NodeSingular) => {
-                return parentId === element.data("parent");
-            });
-        });
-        this.unparented = getNodes(eles, (element: Cy.NodeSingular) => {
-            return !element.data("parent") && !element.isParent();
-        });
         this.calcPositions();
     }
 
@@ -85,37 +72,22 @@ export class BoxGridLayout {
         const padding = Math.max(0, 200 - maxWidth);
         return {
             name: "grid",
-            position: this.position.bind(this),
-            rows: this.maxRow(),
-            cols: this.maxCol(),
+            position: this.positionForNode.bind(this),
             condense: true,
             avoidOverlapPadding: padding,
             fit: true,
         } as Cy.GridLayoutOptions;
     }
 
-    private position(node: Cy.NodeSingular): IGridPos {
+    private positionForNode(node: Cy.NodeSingular): IGridPos {
         return this.positions[node.id()];
     }
 
-    private maxRow() {
-        return this.posGrid.length;
-    }
-    private maxCol() {
-        let maxCol = 0;
-        for (let i = 0; i < this.posGrid.length; i++) {
-            if (this.posGrid[i] && this.posGrid[i].length > maxCol) {
-                maxCol = this.posGrid[i].length;
-            }
+    private getRow(posGrid: string[][], i: number) {
+        if (!posGrid[i]) {
+            posGrid[i] = [];
         }
-        return maxCol;
-    }
-
-    private getRow(i: number) {
-        if (!this.posGrid[i]) {
-            this.posGrid[i] = [];
-        }
-        return this.posGrid[i];
+        return posGrid[i];
     }
 
     private setAvailableColumn(row: number, col: number) {
@@ -137,6 +109,7 @@ export class BoxGridLayout {
     }
 
     private calcPositionsFor(
+        posGrid: string[][],
         eles: Cy.NodeCollection,
         startCol: number,
         startRow: number,
@@ -152,29 +125,41 @@ export class BoxGridLayout {
             }
         }
         for (let i = 0; i < eles.length; i++) {
-            this.getRow(row + startRow)[col + startCol] = eles[i].id();
+            this.getRow(posGrid, row + startRow)[col + startCol] = eles[i].id();
             this.setAvailableColumn(row + startRow, startCol + wrapThreshold);
             next();
         }
     }
     private calcPositions() {
-        const wrapThreshold = this.getWidth(this.elementCount);
-        const nodeCollections: Cy.NodeCollection[] = [this.unparented];
-        for (const parentId in this.parented) {
-            nodeCollections.push(this.parented[parentId]);
+        const elementCount = getNodes(this.eles, (element) => !element.isParent()).length;
+        const wrapThreshold = this.getWidth(elementCount);
+
+        const parented: { [parentId: string]: Cy.NodeCollection } = {};
+        this.eles.nodes(":parent").map((p) => p.id()).forEach((parentId) => {
+            parented[parentId] = getNodes(this.eles, (element: Cy.NodeSingular) => {
+                return parentId === element.data("parent");
+            });
+        });
+        const unparented = getNodes(this.eles, (element: Cy.NodeSingular) => {
+            return !element.data("parent") && !element.isParent();
+        });
+        const nodeCollections: Cy.NodeCollection[] = [unparented];
+        for (const parentId in parented) {
+            nodeCollections.push(parented[parentId]);
         }
         let rowIdx = 0;
         let colIdex = 0;
+        const posGrid: string[][] = [];
         for (const nodeCollection of nodeCollections) {
             const width = this.getWidth(nodeCollection.length);
             while (this.getAvailableColumn(rowIdx) + width > wrapThreshold) {
                 rowIdx++;
             }
             colIdex = this.getAvailableColumn(rowIdx);
-            this.calcPositionsFor(nodeCollection, colIdex, rowIdx);
+            this.calcPositionsFor(posGrid, nodeCollection, colIdex, rowIdx);
         }
-        for (let i = 0; i < this.posGrid.length; i++) {
-            const row = this.getRow(i);
+        for (let i = 0; i < posGrid.length; i++) {
+            const row = this.getRow(posGrid, i);
             for (let j = 0; j < row.length; j++) {
                 if (row[j]) {
                     this.positions[row[j]] = { row: i, col: j };
