@@ -60,6 +60,10 @@ interface IGridPos {
 interface IGridPositions {
     [id: string]: IGridPos;
 }
+export interface INodeHierarchy {
+    directIds: string[];
+    groups: INodeHierarchy[];
+}
 export class BoxGridLayout {
     constructor(
         private readonly eles: Cy.NodeCollection,
@@ -68,7 +72,8 @@ export class BoxGridLayout {
     public getLayout(): Cy.GridLayoutOptions {
         const maxWidth = this.eles.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
         const padding = Math.max(0, 200 - maxWidth);
-        const positions = this.calcPositions();
+        const hierarchy = this.getHierarchy(this.eles);
+        const positions = this.calcPositions(hierarchy);
         const position = (n: Cy.NodeSingular) => positions[n.id()];
         return {
             name: "grid",
@@ -78,7 +83,6 @@ export class BoxGridLayout {
             fit: true,
         } as Cy.GridLayoutOptions;
     }
-
     private getRow(posGrid: string[][], i: number) {
         if (!posGrid[i]) {
             posGrid[i] = [];
@@ -86,31 +90,28 @@ export class BoxGridLayout {
         return posGrid[i];
     }
 
-    private setAvailableColumn(availableColumn: number[], row: number, col: number) {
-        const val = availableColumn[row] || 0;
-        if (val < col) {
-            availableColumn[row] = col;
-        }
-    }
+    // private setAvailableColumn(availableColumn: number[], row: number, col: number) {
+    //     const val = availableColumn[row] || 0;
+    //     if (val < col) {
+    //         availableColumn[row] = col;
+    //     }
+    // }
 
-    private getAvailableColumn(availableColumn: number[], row?: number): number {
-        if (typeof row !== "number" || !availableColumn[row]) {
-            return 0;
-        }
-        return availableColumn[row];
-    }
+    // private getAvailableColumn(availableColumn: number[], row?: number): number {
+    //     if (typeof row !== "number" || !availableColumn[row]) {
+    //         return 0;
+    //     }
+    //     return availableColumn[row];
+    // }
 
     private getWidth(nodeCount: number): number {
         return Math.round(Math.sqrt(nodeCount));
     }
 
     private calcPositionsFor(
-        posGrid: string[][],
-        availableColumns: number[],
         ids: string[],
-        startCol: number,
-        startRow: number,
-    ): void {
+    ): string[][] {
+        const posGrid: string[][] = [];
         const wrapThreshold = this.getWidth(ids.length);
         let col = 0;
         let row = 0;
@@ -122,42 +123,21 @@ export class BoxGridLayout {
             }
         }
         for (const id of ids) {
-            this.getRow(posGrid, row + startRow)[col + startCol] = id;
-            this.setAvailableColumn(availableColumns, row + startRow, startCol + wrapThreshold);
+            this.getRow(posGrid, row)[col] = id;
             next();
         }
+        return posGrid;
     }
-    private calcPositions() {
-        const parented: { [parentId: string]: Cy.NodeCollection } = {};
-        this.eles.nodes(":parent").map((p) => p.id()).forEach((parentId) => {
-            parented[parentId] = getNodes(this.eles, (element: Cy.NodeSingular) => {
-                return parentId === element.data("parent");
-            });
-        });
-        const unparented = getNodes(this.eles, (element: Cy.NodeSingular) => {
-            return !element.data("parent") && !element.isParent();
-        });
-        const nodeCollections: Cy.NodeCollection[] = [unparented];
-        for (const parentId in parented) {
-            nodeCollections.push(parented[parentId]);
+    private calcPosGrid({directIds, groups}: INodeHierarchy): string[][] {
+        const directGrid = this.calcPositionsFor(directIds);
+        const groupGrids = groups.map((g) => this.calcPosGrid(g));
+        for (const groupGrid of groupGrids) {
+            directGrid.push(...groupGrid);
         }
-
-        // thresholds for boundries
-        const elementCount = getNodes(this.eles, (element) => !element.isParent()).length;
-        const wrapThreshold = this.getWidth(elementCount);
-        let rowIdx = 0;
-        let colIdex = 0;
-        const posGrid: string[][] = [];
-        const availableColumns: number[] = [];
-        for (const nodeCollection of nodeCollections) {
-            const width = this.getWidth(nodeCollection.length);
-            while (this.getAvailableColumn(availableColumns, rowIdx) + width > wrapThreshold) {
-                rowIdx++;
-            }
-            colIdex = this.getAvailableColumn(availableColumns, rowIdx);
-            const ids: string[] = nodeCollection.map((n) => n.id());
-            this.calcPositionsFor(posGrid, availableColumns, ids, colIdex, rowIdx);
-        }
+        return directGrid;
+    }
+    private calcPositions(nodes: INodeHierarchy): IGridPositions {
+        const posGrid = this.calcPosGrid(nodes);
         const positions: IGridPositions = {};
         for (let i = 0; i < posGrid.length; i++) {
             const row = this.getRow(posGrid, i);
@@ -168,6 +148,19 @@ export class BoxGridLayout {
             }
         }
         return positions;
+    }
+
+    private getHierarchyNodeCount({directIds, groups}: INodeHierarchy): number {
+        return [directIds.length, ...groups.map((g) => this.getHierarchyNodeCount(g))].reduce((a, b) => a + b);
+    }
+    private getHierarchy(eles: Cy.NodeCollection, parentId?: string): INodeHierarchy {
+        const directChildren = getNodes(eles, (n) => n.parent().id() === parentId);
+        const parentIds = directChildren.nodes(":parent").map((n) => n.id());
+        const directIds = directChildren.nodes(":childless").map((n) => n.id());
+        return {
+            directIds,
+            groups: parentIds.map((id) => this.getHierarchy(eles, id)),
+        };
     }
 }
 
