@@ -90,20 +90,6 @@ export class BoxGridLayout {
         return posGrid[i];
     }
 
-    // private setAvailableColumn(availableColumn: number[], row: number, col: number) {
-    //     const val = availableColumn[row] || 0;
-    //     if (val < col) {
-    //         availableColumn[row] = col;
-    //     }
-    // }
-
-    // private getAvailableColumn(availableColumn: number[], row?: number): number {
-    //     if (typeof row !== "number" || !availableColumn[row]) {
-    //         return 0;
-    //     }
-    //     return availableColumn[row];
-    // }
-
     private getWidth(nodeCount: number): number {
         return Math.round(Math.sqrt(nodeCount));
     }
@@ -128,13 +114,34 @@ export class BoxGridLayout {
         }
         return posGrid;
     }
-    private calcPosGrid({directIds, groups}: INodeHierarchy): string[][] {
-        const directGrid = this.calcPositionsFor(directIds);
-        const groupGrids = groups.map((g) => this.calcPosGrid(g));
-        for (const groupGrid of groupGrids) {
-            directGrid.push(...groupGrid);
+    private insertGrid(parent: string[][], child: string[][], row: number, col: number): void {
+        for (let i = 0; i < child.length; i++) {
+            const childRow = child[i];
+            for (let j = 0; j < childRow.length; j++) {
+                const parentRow = this.getRow(parent, i + row);
+                parentRow[j + col] = childRow[j];
+            }
         }
-        return directGrid;
+    }
+    private calcPosGrid({directIds, groups}: INodeHierarchy): string[][] {
+        const grids = [
+            this.calcPositionsFor(directIds),
+            ...groups.map((g) => this.calcPosGrid(g)),
+        ];
+        const wrapThreshold = this.getWidth(this.getHierarchyNodeCount({directIds, groups}));
+        // sort into descending height order
+        grids.sort((a, b) => b.length - a.length);
+        const posGrid: string[][] = [];
+        let row = 0;
+        for (const groupGrid of grids) {
+            const groupWidth = groupGrid[0].length;
+            while (this.getRow(posGrid, row).length + groupWidth > wrapThreshold) {
+                row++;
+            }
+            const col = this.getRow(posGrid, row).length;
+            this.insertGrid(posGrid, groupGrid, row, col);
+        }
+        return posGrid;
     }
     private calcPositions(nodes: INodeHierarchy): IGridPositions {
         const posGrid = this.calcPosGrid(nodes);

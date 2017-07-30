@@ -32,4 +32,21 @@ suite("layout tests", function(this: ISuiteCallbackContext) {
             grid,
         );
     });
+    test("2 levels", function(this: ITestCallbackContext) {
+        const nodes: INodeHierarchy = {
+            directIds: ["1", "2"],
+            groups: [
+                {directIds: ["3"], groups: []},
+                {directIds: ["4"], groups: []},
+            ],
+        };
+        const grid = getGrid(nodes);
+        assert.deepEqual(
+            [
+                ["1", "3"],
+                ["2", "4"],
+            ],
+            grid,
+        );
+    });
 });
