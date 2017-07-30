@@ -197,7 +197,12 @@ function computeDiagram(
     for (const id in ctx.nodes) {
         const { parent } = ctx.nodes[id].data;
         if (parent) {
-            ctx.nodes[parent].data.valign = "top";
+            if ((parent in ctx.nodes)) {
+                ctx.nodes[parent].data.valign = "top";
+            } else {
+                // tslint:disable-next-line:no-console
+                console.log("could not find parent of child", parent, id);
+            }
         }
     }
     setStatus("Computing edges...");
