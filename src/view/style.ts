@@ -11,11 +11,15 @@ export function getCyStyle(): any {
             "width": "data(nodeSize)",
             "text-outline-color": "black",
             "text-outline-width": 2,
-            "text-valign": "data(valign)",
+            "text-valign": "center",
             "border-color": "black",
             "border-opacity": "1",
             "border-width": "3",
             "border-style": "solid",
+        })
+        .selector(":parent")
+        .css({
+            "text-valign": "top",
         })
         .selector("edge")
         .css({

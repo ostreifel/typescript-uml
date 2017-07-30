@@ -13,7 +13,6 @@ export interface IDiagramNodeData extends Cy.NodeDataDefinition {
     nodeSize: number;
     /** CSS color value */
     color: string;
-    valign: "center" | "top" | "bottom";
     type: string;
 }
 

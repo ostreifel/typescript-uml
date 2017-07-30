@@ -100,6 +100,11 @@ function setMenuItems(filePath: string, cy: Cy.Core) {
                     accelerator: "Alt+E",
                     click: () => applyDefaultLayout(cy),
                 },
+                {
+                    label: "Re-Compile",
+                    accelerator: "Alt+C",
+                    click: () => loadInitial(filePath),
+                },
             ],
         },
     ]);
@@ -137,8 +142,7 @@ function updateUI(
     updateWindowTitle(`${path.basename(filePath)} UML`);
     return cy;
 }
-function loadInitial() {
-    const [, , , filePath] = remote.getGlobal("diagramArgs");
+function loadInitial(filePath: string) {
     const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
     const cy = updateUI({
         elements,
@@ -152,4 +156,4 @@ function loadInitial() {
 remote.getCurrentWindow().setMenu(remote.Menu.buildFromTemplate([
     { role: "toggledevtools" },
 ]));
-loadInitial();
+loadInitial(remote.getGlobal("diagramArgs")[3]);

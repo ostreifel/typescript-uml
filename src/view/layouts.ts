@@ -132,7 +132,7 @@ export class BoxGridLayout {
         const grids = [
             this.calcPositionsFor(directIds),
             ...groups.map((g) => this.calcPosGrid(g)),
-        ];
+        ].filter((g) => g.length > 0);
         const wrapThreshold = this.getWidth(this.getHierarchyNodeCount({directIds, groups}));
         // sort into descending height order
         grids.sort((a, b) => b.length - a.length);

@@ -184,25 +184,12 @@ function computeDiagram(
                     id,
                     name: graphNode.symbol.getName(),
                     parent: getParentId(ctx, graphNode.symbol),
-                    valign: "center",
                     ...getSymbolProperties(graphNode.symbol),
                 },
             };
             elements.push(node);
             ctx.nodes[node.data.id] = node;
             validNodes.push(graphNode);
-        }
-    }
-    setStatus("Updating parent texts...");
-    for (const id in ctx.nodes) {
-        const { parent } = ctx.nodes[id].data;
-        if (parent) {
-            if ((parent in ctx.nodes)) {
-                ctx.nodes[parent].data.valign = "top";
-            } else {
-                // tslint:disable-next-line:no-console
-                console.log("could not find parent of child", parent, id);
-            }
         }
     }
     setStatus("Computing edges...");
