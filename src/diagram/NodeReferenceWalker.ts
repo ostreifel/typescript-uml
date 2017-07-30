@@ -28,6 +28,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     private readonly languageService: ts.LanguageService;
     private inFunction: boolean = false;
+    private inMethod: boolean = false;
 
     constructor(readonly sourceFile: ts.SourceFile) {
         super();
@@ -36,14 +37,9 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitConstructorDeclaration(node: ts.ConstructorDeclaration): void {
         this.storeNodeReferences(node);
+        this.inMethod = true;
         super.visitConstructorDeclaration(node);
-    }
-
-    public visitBindingElement(node: ts.BindingElement) {
-        if (!this.inFunction) {
-            this.storeNodeReferences(node);
-        }
-        super.visitBindingElement(node);
+        this.inMethod = false;
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
@@ -77,12 +73,16 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
         this.storeNodeReferences(node);
+        this.inMethod = true;
         super.visitInterfaceDeclaration(node);
+        this.inMethod = false;
     }
 
     public visitMethodDeclaration(node: ts.MethodDeclaration) {
         this.storeNodeReferences(node);
+        this.inMethod = true;
         super.visitMethodDeclaration(node);
+        this.inMethod = false;
     }
 
     public visitModuleDeclaration(node: ts.ModuleDeclaration): void {
@@ -103,11 +103,15 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     }
 
     public visitPropertyDeclaration(node: ts.PropertyDeclaration) {
-        this.storeNodeReferences(node);
+        if (!this.inMethod) {
+            this.storeNodeReferences(node);
+        }
         super.visitPropertyDeclaration(node);
     }
     public visitPropertySignature(node: ts.PropertySignature) {
-        this.storeNodeReferences(node);
+        if (!this.inMethod) {
+            this.storeNodeReferences(node);
+        }
         super.visitPropertySignature(node);
     }
 
@@ -116,10 +120,17 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         super.visitClassDeclaration(node);
     }
 
+    public visitBindingElement(node: ts.BindingElement) {
+        if (!this.inFunction && !this.inMethod) {
+            this.storeNodeReferences(node);
+        }
+        super.visitBindingElement(node);
+    }
+
     public visitVariableDeclaration(node: ts.VariableDeclaration) {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 
-        if (isSingleVariable && !this.inFunction) {
+        if (isSingleVariable && !this.inFunction && !this.inMethod) {
             this.storeNodeReferences(node);
         }
 

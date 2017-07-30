@@ -114,18 +114,30 @@ export class BoxGridLayout {
         }
         return posGrid;
     }
+    /**
+     * *** => ***
+     * **     ***
+     * @param posGrid to rectangularize
+     */
+    private completeRectangle(posGrid: string[][]) {
+        if (posGrid.length < 1) {
+            return;
+        }
+        const width = posGrid[0].length;
+        for (const row of posGrid) {
+            while (row.length < width) {
+                row[row.length] = "";
+            }
+        }
+    }
     private insertGrid(parent: string[][], child: string[][], row: number, col: number): void {
+        this.completeRectangle(child);
         for (let i = 0; i < child.length; i++) {
             const childRow = child[i];
             for (let j = 0; j < childRow.length; j++) {
                 const parentRow = this.getRow(parent, i + row);
                 parentRow[j + col] = childRow[j];
             }
-        }
-        const lastRow = this.getRow(parent, row + child.length - 1);
-        // complete the rectangle
-        while (lastRow.length < col + child[0].length) {
-            lastRow[lastRow.length] = "";
         }
     }
     private calcPosGrid({directIds, groups}: INodeHierarchy): string[][] {
@@ -146,6 +158,7 @@ export class BoxGridLayout {
             const col = this.getRow(posGrid, row).length;
             this.insertGrid(posGrid, groupGrid, row, col);
         }
+        this.completeRectangle(posGrid);
         return posGrid;
     }
     private calcPositions(nodes: INodeHierarchy): IGridPositions {
