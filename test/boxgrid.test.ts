@@ -49,4 +49,27 @@ suite("layout tests", function(this: ISuiteCallbackContext) {
             grid,
         );
     });
+    test("imperfect square", function(this: ITestCallbackContext) {
+        const nodes: INodeHierarchy = {
+            // just so that the main window is 3 by 3
+            directIds: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
+            groups: [
+                {directIds: ["a", "b", "c"], groups: []},
+                {directIds: ["d"], groups: []},
+                {directIds: ["e"], groups: []},
+                {directIds: ["f"], groups: []},
+            ],
+        };
+        const grid = getGrid(nodes);
+        assert.deepEqual(
+            [
+                ["1", "2", "3"],
+                ["4", "5", "6"],
+                ["7", "8", "9"],
+                ["a", "b", "d", "e"],
+                ["c",  "" , "f"],
+            ],
+            grid,
+        );
+    });
 });

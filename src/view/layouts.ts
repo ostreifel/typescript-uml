@@ -122,6 +122,11 @@ export class BoxGridLayout {
                 parentRow[j + col] = childRow[j];
             }
         }
+        const lastRow = this.getRow(parent, row + child.length - 1);
+        // complete the rectangle
+        while (lastRow.length < col + child[0].length) {
+            lastRow[lastRow.length] = "";
+        }
     }
     private calcPosGrid({directIds, groups}: INodeHierarchy): string[][] {
         const grids = [
