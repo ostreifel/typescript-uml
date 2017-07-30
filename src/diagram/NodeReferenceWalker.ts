@@ -27,14 +27,11 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     public readonly graphNodes: IGraphNode[] = [];
 
     private readonly languageService: ts.LanguageService;
+    private inFunction: boolean = false;
 
     constructor(readonly sourceFile: ts.SourceFile) {
         super();
         this.languageService = createLanguageService(sourceFile.fileName, sourceFile.getFullText());
-    }
-
-    public visitBlock(/*node: ts.Block*/): void {
-        // skip
     }
 
     public visitConstructorDeclaration(node: ts.ConstructorDeclaration): void {
@@ -43,13 +40,18 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     }
 
     public visitBindingElement(node: ts.BindingElement) {
-        this.storeNodeReferences(node);
+        if (!this.inFunction) {
+            this.storeNodeReferences(node);
+        }
         super.visitBindingElement(node);
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
         this.storeNodeReferences(node);
+        const prev = this.inFunction;
+        this.inFunction = true;
         super.visitFunctionDeclaration(node);
+        this.inFunction = prev;
     }
 
     public visitImportDeclaration(node: ts.ImportDeclaration) {
@@ -117,7 +119,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     public visitVariableDeclaration(node: ts.VariableDeclaration) {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 
-        if (isSingleVariable) {
+        if (isSingleVariable && !this.inFunction) {
             this.storeNodeReferences(node);
         }
 
