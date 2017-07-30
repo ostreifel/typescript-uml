@@ -36,10 +36,8 @@ body {
         max-height: 50vh;
         max-width: 300px;
         overflow: auto;
-        .node, .edge {
-            padding: 10px;
-            background-color: white;
-        }
+        padding: 10px;
+        background-color: white;
         .node {
             .name {
                 margin: 0;
