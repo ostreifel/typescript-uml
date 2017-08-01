@@ -72,6 +72,10 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
             }
         });
     }
+    public detach() {
+        this.cy.off("free", "node");
+        this.cy.off("grab", "node");
+    }
 }
 
 function getTopMostNodes(nodes: Cy.NodeCollection) {
@@ -149,10 +153,18 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
             this.push({startPositions, endPositions}, true);
         });
     }
+    public detach() {
+        this.cy.off("layoutstart");
+        this.cy.off("layoutready");
+    }
 }
 
 export function registerGraphActions(cy: Cy.Core) {
-    new DragAction(cy).register();
-    new LayoutAction(cy).register();
+    const actions = [
+        new DragAction(cy),
+        new LayoutAction(cy),
+    ];
+    actions.forEach((a) => a.register());
+    return actions;
 
 }

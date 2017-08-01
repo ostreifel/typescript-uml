@@ -34,6 +34,12 @@ export abstract class UndoRedoAction<T extends IActionArgs> {
     }
     public abstract do(args: T): void;
     public abstract undo(args: T): void;
+    public register() {
+        // noop
+    }
+    public detach() {
+        // noop
+    }
 }
 
 export function redo() {
