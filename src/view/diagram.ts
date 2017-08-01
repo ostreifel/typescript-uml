@@ -4,6 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { getInfoPaneState, registerInfoPane } from "./ElementInfo";
+import { registerGraph } from "./graphActions";
 import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
@@ -13,6 +14,7 @@ import {
     presetLayout,
 } from "./Layouts";
 import { getCyStyle } from "./style";
+import { redo, undo } from "./undoRedo";
 
 const fileExtension = "tsgraph.json";
 const fileFilters: Electron.FileFilter[] = [{
@@ -107,6 +109,21 @@ function setMenuItems(filePath: string, cy: Cy.Core) {
                 },
             ],
         },
+        {
+            label: "Edit",
+            submenu: [
+                {
+                    label: "Undo",
+                    accelerator: "CommandOrControl+Z",
+                    click: () => undo(),
+                },
+                {
+                    label: "Redo",
+                    accelerator: "CommandOrControl+Y",
+                    click: () => redo(),
+                },
+            ],
+        },
     ]);
     remote.getCurrentWindow().setMenu(menu);
 }
@@ -119,6 +136,9 @@ function applyDefaultLayout(cy: Cy.Core) {
     updateWindowTitle("Computing layout...");
     applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
     updateWindowTitle(currentTitle);
+}
+function registerUndoRedo(cy: Cy.Core) {
+    registerGraph(cy);
 }
 function updateUI(
     {
@@ -139,6 +159,7 @@ function updateUI(
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
     registerFilterPane(cy, filterPanelState);
+    registerUndoRedo(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     return cy;
 }
