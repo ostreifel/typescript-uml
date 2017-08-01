@@ -21,7 +21,9 @@ function createWindow() {
         title: "Loading file....",
     });
     mainWindow.maximize();
-    mainWindow.setMenu(null);
+    mainWindow.setMenu(electron.Menu.buildFromTemplate([
+        { role: "toggledevtools" },
+    ]));
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({

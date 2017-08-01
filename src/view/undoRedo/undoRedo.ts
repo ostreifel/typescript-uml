@@ -1,20 +1,25 @@
+const actions: { [key: string]: UndoRedoAction<any> } = {};
 
-const actions: { [key: string]: Action<any> } = {};
-
+export interface IUndoRedoStacks {
+    redo: IStoredAction[];
+    undo: IStoredAction[];
+}
 export interface IStoredAction {
     name: string;
     args: IActionArgs;
 }
-const redoStack: IStoredAction[] = [];
-const undoStack: IStoredAction[] = [];
+let stacks: IUndoRedoStacks = {
+    redo: [],
+    undo: [],
+};
 
 export interface IActionArgs {}
-export abstract class Action<T extends IActionArgs> {
+export abstract class UndoRedoAction<T extends IActionArgs> {
     constructor(public readonly name) {
         actions[name] = this;
     }
     public push(args: T, silent: boolean = false) {
-        redoStack.length = 0;
+        stacks.redo = [];
         const action = actions[this.name];
         if (!action) {
             return;
@@ -22,16 +27,17 @@ export abstract class Action<T extends IActionArgs> {
         if (!silent) {
             action.do(args);
         }
-        undoStack.push({name: this.name, args});
-        if (undoStack.length > 1000) {
-            undoStack.splice(0, undoStack.length - 1000);
+        stacks.undo.push({name: this.name, args});
+        if (stacks.undo.length > 1000) {
+            stacks.undo.splice(0, stacks.undo.length - 1000);
         }
     }
     public abstract do(args: T): void;
     public abstract undo(args: T): void;
 }
+
 export function redo() {
-    const storedAction = redoStack.pop();
+    const storedAction = stacks.redo.pop();
     if (!storedAction) {
         return;
     }
@@ -40,11 +46,11 @@ export function redo() {
         return;
     }
     action.do(storedAction.args);
-    undoStack.push(storedAction);
+    stacks.undo.push(storedAction);
 }
 
 export function undo() {
-    const storedAction = undoStack.pop();
+    const storedAction = stacks.undo.pop();
     if (!storedAction) {
         return;
     }
@@ -53,5 +59,9 @@ export function undo() {
         return;
     }
     action.undo(storedAction.args);
-    redoStack.push(storedAction);
+    stacks.redo.push(storedAction);
+}
+
+export function resetStacks(newStacks: IUndoRedoStacks) {
+    stacks = newStacks;
 }

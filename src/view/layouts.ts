@@ -48,7 +48,7 @@ export function presetLayout(positions: INodePositions): Cy.PresetLayoutOptions 
 export function getPositions(eles: Cy.NodeCollection): INodePositions {
     const positions: INodePositions = {};
     eles.forEach((ele) => {
-        positions[ele.id()] = ele.position();
+        positions[ele.id()] = ({...ele.position()});
     });
     return positions;
 }

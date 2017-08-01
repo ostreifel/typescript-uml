@@ -4,7 +4,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { getInfoPaneState, registerInfoPane } from "./ElementInfo";
-import { registerGraph } from "./graphActions";
 import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
@@ -14,7 +13,8 @@ import {
     presetLayout,
 } from "./Layouts";
 import { getCyStyle } from "./style";
-import { redo, undo } from "./undoRedo";
+import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
+import { redo, undo } from "./undoRedo/undoRedo";
 
 const fileExtension = "tsgraph.json";
 const fileFilters: Electron.FileFilter[] = [{
@@ -137,9 +137,6 @@ function applyDefaultLayout(cy: Cy.Core) {
     applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
     updateWindowTitle(currentTitle);
 }
-function registerUndoRedo(cy: Cy.Core) {
-    registerGraph(cy);
-}
 function updateUI(
     {
         filePath,
@@ -159,7 +156,7 @@ function updateUI(
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
     registerFilterPane(cy, filterPanelState);
-    registerUndoRedo(cy);
+    resetUndoRedo(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     return cy;
 }
@@ -172,9 +169,7 @@ function loadInitial(filePath: string) {
         infoPanelState: "",
     } as ISaveData);
     applyDefaultLayout(cy);
+    resetUndoRedo(cy);
 }
 
-remote.getCurrentWindow().setMenu(remote.Menu.buildFromTemplate([
-    { role: "toggledevtools" },
-]));
 loadInitial(remote.getGlobal("diagramArgs")[3]);

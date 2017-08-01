@@ -1,6 +1,7 @@
 
-import { getNodes } from "./getEles";
-import { Action } from "./undoRedo";
+import { getNodes } from "../getEles";
+import { getPositions, INodePositions, presetLayout } from "../Layouts";
+import { UndoRedoAction } from "./undoRedo";
 
 export interface IPositionDiff {
     x: number;
@@ -11,8 +12,8 @@ export interface IDragActionArgs {
     positionDiff: IPositionDiff;
     nodes: Cy.NodeCollection;
 }
-export class DragAction extends Action<IDragActionArgs> {
-    constructor() {
+export class DragAction extends UndoRedoAction<IDragActionArgs> {
+    constructor(private readonly cy: Cy.Core) {
         super("drag");
     }
     public do(args: IDragActionArgs): void {
@@ -26,10 +27,10 @@ export class DragAction extends Action<IDragActionArgs> {
         moveNodes(diff, args.nodes);
     }
 
-    public register(cy: Cy.Core) {
+    public register() {
         const that = this;
         let lastMouseDownNodeInfo;
-        cy.on("grab", "node", function(this: Cy.NodeCollection) {
+        this.cy.on("grab", "node", function(this: Cy.NodeCollection) {
             lastMouseDownNodeInfo = {};
             lastMouseDownNodeInfo.lastMouseDownPosition = {
                 x: this.position("x"),
@@ -37,7 +38,7 @@ export class DragAction extends Action<IDragActionArgs> {
             };
             lastMouseDownNodeInfo.node = this;
         });
-        cy.on("free", "node", function(this: Cy.NodeCollection) {
+        this.cy.on("free", "node", function(this: Cy.NodeCollection) {
             if (lastMouseDownNodeInfo == null) {
                 return;
             }
@@ -56,9 +57,9 @@ export class DragAction extends Action<IDragActionArgs> {
 
                 let nodes: Cy.NodeCollection;
                 if (node.selected()) {
-                    nodes = cy.nodes(":visible").filter(":selected");
+                    nodes = that.cy.nodes(":visible").filter(":selected");
                 } else {
-                    nodes = cy.collection([node]);
+                    nodes = that.cy.collection([node]);
                 }
 
                 const param: IDragActionArgs = {
@@ -71,10 +72,7 @@ export class DragAction extends Action<IDragActionArgs> {
             }
         });
     }
-
 }
-
-const dragAction = new DragAction();
 
 function getTopMostNodes(nodes: Cy.NodeCollection) {
     const nodesMap = {};
@@ -109,6 +107,52 @@ function moveNodes(positionDiff: IPositionDiff, nodes: Cy.NodeCollection, notCal
     }
 }
 
-export function registerGraph(cy: Cy.Core) {
-    dragAction.register(cy);
+export interface ILayoutAction {
+    startPositions: INodePositions;
+    endPositions: INodePositions;
+}
+export class LayoutAction extends UndoRedoAction<ILayoutAction> {
+    private actionInProgress = false;
+    constructor(private readonly cy: Cy.Core) {
+        super("layout");
+    }
+    public do(args: ILayoutAction): void {
+        this.actionInProgress = true;
+        const presetOptions = presetLayout(args.endPositions);
+        const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
+        layout.run();
+        this.actionInProgress = false;
+    }
+    public undo(args: ILayoutAction): void {
+        this.actionInProgress = true;
+        const presetOptions = presetLayout(args.startPositions);
+        const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
+        layout.run();
+        this.actionInProgress = false;
+    }
+
+    public register() {
+        let startPositions: INodePositions;
+        this.cy.on("layoutstart", (args) => {
+            if (this.actionInProgress) {
+                return;
+            }
+            const eles: Cy.NodeCollection = args.layout.options.eles;
+            startPositions = getPositions(eles);
+        });
+        this.cy.on("layoutready", (args) => {
+            if (this.actionInProgress) {
+                return;
+            }
+            const eles: Cy.NodeCollection = args.layout.options.eles;
+            const endPositions = getPositions(eles);
+            this.push({startPositions, endPositions}, true);
+        });
+    }
+}
+
+export function registerGraphActions(cy: Cy.Core) {
+    new DragAction(cy).register();
+    new LayoutAction(cy).register();
+
 }
