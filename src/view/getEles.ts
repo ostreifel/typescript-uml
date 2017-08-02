@@ -10,3 +10,9 @@ export function getEdges(
 ) {
     return eles.edges(filter as any);
 }
+export function getEles(
+    eles: Cy.CollectionElements,
+    filter: (n: Cy.CollectionElements) => boolean,
+) {
+    return eles.filter(filter as any);
+}

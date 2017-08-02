@@ -13,6 +13,7 @@ let stacks: IUndoRedoStacks = {
     undo: [],
 };
 
+/** Must be serializable -- no dom references, functions, or recursion */
 export interface IActionArgs {}
 export abstract class UndoRedoAction<T extends IActionArgs> {
     constructor(public readonly name) {
@@ -34,12 +35,8 @@ export abstract class UndoRedoAction<T extends IActionArgs> {
     }
     public abstract do(args: T): void;
     public abstract undo(args: T): void;
-    public register() {
-        // noop
-    }
-    public detach() {
-        // noop
-    }
+    public abstract attach(cy: Cy.Core);
+    public abstract detach();
 }
 
 export function redo() {

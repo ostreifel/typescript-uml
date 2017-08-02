@@ -27,7 +27,7 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
         moveNodes(diff, args.nodes);
     }
 
-    public register() {
+    public attach() {
         const that = this;
         let lastMouseDownNodeInfo;
         this.cy.on("grab", "node", function(this: Cy.NodeCollection) {
@@ -135,7 +135,7 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         this.actionInProgress = false;
     }
 
-    public register() {
+    public attach() {
         let startPositions: INodePositions;
         this.cy.on("layoutstart", (args) => {
             if (this.actionInProgress) {
@@ -164,7 +164,7 @@ export function registerGraphActions(cy: Cy.Core) {
         new DragAction(cy),
         new LayoutAction(cy),
     ];
-    actions.forEach((a) => a.register());
+    actions.forEach((a) => a.attach());
     return actions;
 
 }

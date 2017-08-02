@@ -4,59 +4,47 @@ import * as React from "react";
 import * as ReactDom from "react-dom";
 import { IDiagramFilePosition } from "../diagram/DiagramModel";
 import { getNodes } from "./getEles";
+import { ISelectAction, SelectAction } from "./undoRedo/SelectAction";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
-let cy: Cy.Core;
 
 class GraphHighlights {
-    private target?: Cy.CollectionSelection & Cy.Singular;
-    private incoming?: Cy.EdgeCollection;
-    private outgoing?: Cy.EdgeCollection;
-    public unselect() {
-        if (this.target) {
-            this.target.unselect();
-            this.target = null;
-        }
-        if (this.incoming) {
-            this.incoming.removeClass("incoming");
-            this.incoming = null;
-        }
-        if (this.outgoing) {
-            this.outgoing.removeClass("outgoing");
-            this.outgoing = null;
+    private cy: Cy.Core;
+    private selectAction = new SelectAction(showInfo, hideInfo);
+    private targetId: string;
+    public getSelectedId() {
+        return this.targetId;
+    }
+    public select(ele?: Cy.CollectionElements, syntheticEvent: boolean = false): void {
+        const args: ISelectAction = {
+            startSelect: this.targetId,
+            endSelect: ele ? ele.id() : "",
+        };
+        this.targetId = args.endSelect;
+        this.selectAction.push(args);
+        if (ele && !syntheticEvent) {
+            // Select state will be toggled after click events
+            ele.unselect();
         }
     }
-    public selectNode(node: Cy.NodeCollection, syntheticEvent: boolean) {
-        this.unselect();
-        this.incoming = node.incomers().edges("");
-        this.incoming.addClass("incoming");
-        this.outgoing = node.outgoers().edges("");
-        this.outgoing.addClass("outgoing");
-        this.selectTarget(node, syntheticEvent);
+    public attach(cy: Cy.Core) {
+        this.detach();
+        this.cy = cy;
+        this.selectAction.attach(cy);
     }
-    public selectEdge(edge: Cy.EdgeCollection, syntheticEvent: boolean) {
-        this.unselect();
-        this.selectTarget(edge, syntheticEvent);
-    }
-    public getSelectedId(): string {
-        return this.target ? this.target.id() : "";
-    }
-    private selectTarget(target: Cy.CollectionSelection & Cy.Singular, syntheticEvent: boolean) {
-        if (syntheticEvent) {
-            // the click even will select on its own normally
-            target.select();
-        }
-        this.target = target;
+    public detach() {
+        this.selectAction.detach();
+        this.cy = null;
     }
 }
 const highlighted = new GraphHighlights();
 
 export function registerInfoPane(
-    cy2: Cy.Core,
+    cy: Cy.Core,
     startSelect: string,
 ) {
-    cy = cy2;
-    cy.on("click", showElementInfo);
+    highlighted.attach(cy);
+    cy.on("click", onClick);
 
     if (startSelect) {
         const node = getNodes(cy.nodes(), (n) => n.id() === startSelect);
@@ -72,30 +60,31 @@ export function getInfoPaneState(): string {
 /**
  * @param supressToggle whether this was manually called by trigger
  */
-function showElementInfo(e: Cy.EventObject, syntheticEvent?: boolean) {
+function onClick(e: Cy.EventObject, syntheticEvent?: boolean) {
     const target: Cy.CollectionElements = e.target;
 
     if (
         target.id && highlighted.getSelectedId() !== target.id()
     ) {
-        if (target.isNode()) {
-            const node = target as Cy.NodeCollection;
-            highlighted.selectNode(node, syntheticEvent);
-            showNode(node);
-        } else if (target.isEdge()) {
-            const edge = target as Cy.EdgeCollection;
-            highlighted.selectEdge(edge, syntheticEvent);
-            showEdge(edge);
-        }
+        highlighted.select(target, syntheticEvent);
     } else {
-        hide();
+        highlighted.select(null);
     }
     return;
 }
 
-function hide() {
+function showInfo(target: Cy.CollectionElements) {
+    if (target.isNode()) {
+        const node = target as Cy.NodeCollection;
+        showNode(node);
+    } else if (target.isEdge()) {
+        const edge = target as Cy.EdgeCollection;
+        showEdge(edge);
+    }
+}
+
+function hideInfo() {
     infoElement.innerHTML = "";
-    highlighted.unselect();
 }
 function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);

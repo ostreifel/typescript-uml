@@ -3,7 +3,7 @@ import { remote } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
-import { getInfoPaneState, registerInfoPane } from "./ElementInfo";
+import { getInfoPaneState, registerInfoPane } from "./elementInfo";
 import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
