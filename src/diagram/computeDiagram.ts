@@ -162,6 +162,9 @@ function getEdges(ctx: IReferencesContext, graphNodes: IGraphNode[]): IDiagramEd
             }
         }
     }
+    for (const edge of edges) {
+        edge.data.selectedWeight = edge.data.weight + 3;
+    }
     return edges;
 }
 

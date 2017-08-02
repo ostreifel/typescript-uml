@@ -24,6 +24,7 @@ export interface IDiagramEdgeData extends Cy.EdgeDataDefinition {
     source: string;
     target: string;
     weight: number;
+    selectedWeight: number;
     references: IDiagramFilePosition[];
 }
 
