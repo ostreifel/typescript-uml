@@ -2,33 +2,60 @@ import { Toggle } from "office-ui-fabric-react/lib/components/toggle";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { getNodes } from "./getEles";
+import { UndoRedoAction } from "./undoRedo/undoRedo";
 
-export interface IInitialGraphFilterState {
+export interface IFilterData {
     showFilter: boolean;
-    types: {[type: string]: boolean};
+    types: { [type: string]: boolean };
 }
-let currentState: IInitialGraphFilterState;
 export function registerFilterPane(
     cy: Cy.Core,
-    initialState: IInitialGraphFilterState,
+    initialState: IFilterData,
 ) {
+    filterAction.attach(cy);
+    updateFilter(initialState, cy);
+}
+let currentState: IFilterData;
+export function getCurrentFilterState() {
+    return currentState;
+}
+function updateFilter(initialState: IFilterData, cy: Cy.Core) {
     currentState = initialState;
     $(".filter-container").html("");
     ReactDOM.render(<GraphFilter cy={cy} initialState={initialState} />, $(".filter-container")[0]);
 }
-export function getCurrentFilterState() {
-    return currentState;
+
+interface IFilterActionArgs {
+    start: IFilterData;
+    end: IFilterData;
 }
+class FilterAction extends UndoRedoAction<IFilterActionArgs> {
+    private cy: Cy.Core;
+    constructor() {
+        super("filter");
+    }
+    public do({ end }: IFilterActionArgs): void {
+        updateFilter(end, this.cy);
+    }
+    public undo({ start }: IFilterActionArgs): void {
+        updateFilter(start, this.cy);
+    }
+    public attach(cy: Cy.Core) {
+        this.detach();
+        this.cy = cy;
+    }
+    public detach() {
+        this.cy = null;
+    }
+
+}
+const filterAction = new FilterAction();
 
 interface IGraphFilterProps {
     cy: Cy.Core;
-    initialState: IInitialGraphFilterState;
+    initialState: IFilterData;
 }
-class GraphFilter extends React.Component<IGraphFilterProps, {showOptions: boolean}> {
-    constructor(props) {
-        super(props);
-        this.state = {showOptions: props.initialState.showFilter};
-    }
+class GraphFilter extends React.Component<IGraphFilterProps, {}> {
     public render() {
         return <div className="filter">
             <button accessKey="f" title="Filter (alt+f)" onClick={this.toggleOptions.bind(this)}>
@@ -36,45 +63,44 @@ class GraphFilter extends React.Component<IGraphFilterProps, {showOptions: boole
             </button>
             <GraphOptions
                 cy={this.props.cy}
-                className={this.state.showOptions ? "" : "hidden"}
-                initialTypeState={this.props.initialState.types}/>
+                className={this.props.initialState.showFilter ? "" : "hidden"}
+                filterData={this.props.initialState} />
         </div>;
     }
     public toggleOptions() {
-        currentState.showFilter = !this.state.showOptions;
-        this.setState({showOptions: currentState.showFilter});
+        const start = this.props.initialState;
+        const end: IFilterData = { ...start, showFilter: !start.showFilter };
+        filterAction.push({ start, end });
     }
 }
 
 interface IGraphOptionProps {
     cy: Cy.Core;
     className: string;
-    initialTypeState: {[type: string]: boolean};
- }
+    filterData: IFilterData;
+}
 class GraphOptions extends React.Component<
     IGraphOptionProps,
     {}
-> {
+    > {
     constructor(props: IGraphOptionProps) {
         super(props);
-        this.updateForProps(props);
-    }
-    public componentWillReceiveProps?(nextProps: Readonly<IGraphOptionProps>): void {
-        this.updateForProps(nextProps);
     }
     public render() {
-        const typesSet: { [type: string]: void } = {};
+        const { types: typesSelected } = this.props.filterData;
+        const typesSet: { [type: string]: boolean } = {};
         this.props.cy.nodes().forEach((ele) => {
             const type = ele.data("type");
             if (type) {
-                typesSet[type] = undefined;
+                const enabled = !(type in typesSelected) || typesSelected[type];
+                typesSet[type] = enabled;
             }
         });
-        const initialTypes = this.props.initialTypeState;
+        this.toggleNodes(typesSet);
         const types = Object.keys(typesSet).sort().map((type) =>
             <Toggle
                 label={type}
-                defaultChecked={!(type in initialTypes) || initialTypes[type]}
+                defaultChecked={typesSet[type]}
                 className="option"
                 onChanged={(checked) => this.onChange(type, checked)}
             />,
@@ -83,20 +109,20 @@ class GraphOptions extends React.Component<
             {types}
         </div>;
     }
-    private updateForProps(props: IGraphOptionProps) {
-        for (const type in props.initialTypeState) {
-            if (!props.initialTypeState[type]) {
-                this.onChange(type, false);
+    private toggleNodes(types: {[type: string]: boolean}) {
+        for (const type in types) {
+            const nodes = getNodes(this.props.cy.nodes(), (node) => node.data("type") === type);
+            if (types[type]) {
+                nodes["show"]();
+            } else {
+                nodes["hide"]();
             }
         }
     }
     private onChange(type: string, show: boolean) {
-        const nodes = getNodes(this.props.cy.nodes(), (node) => node.data("type") === type);
-        currentState.types[type] = show;
-        if (show) {
-            nodes["show"]();
-        } else {
-            nodes["hide"]();
-        }
+        const start = this.props.filterData;
+        const currentTypes = start.types;
+        const end: IFilterData = {...start, types: {...currentTypes, [type]: show}};
+        filterAction.push({start, end});
     }
 }

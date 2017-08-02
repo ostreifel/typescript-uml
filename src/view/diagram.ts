@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { getInfoPaneState, registerInfoPane } from "./elementInfo";
-import { getCurrentFilterState, IInitialGraphFilterState, registerFilterPane } from "./GraphFilter";
+import { getCurrentFilterState, IFilterData, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
     boxGridLayout,
@@ -28,7 +28,7 @@ interface ISaveData {
     positions: INodePositions;
     filePath: string;
     infoPanelState: string;
-    filterPanelState: IInitialGraphFilterState;
+    filterPanelState: IFilterData;
 }
 
 function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
