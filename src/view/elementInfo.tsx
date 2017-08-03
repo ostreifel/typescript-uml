@@ -144,11 +144,14 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
         const inEdges = node.incomers().edges("");
         const outEdges = node.outgoers().edges("");
         return <div className="node">
-            <button className="name"
+            <button className={`name ${node.hasClass("hidden") ? "hidden" : ""}`}
                 role="heading"
                 title={getData("id")}
                 autoFocus={true}
-                onClick={() => toggleNodeAction.push({id: node.id()})}
+                onClick={() => {
+                    showNode(this.props.node);
+                    toggleNodeAction.push({id: node.id()});
+                }}
             >
                 {getData("name")}
             </button>

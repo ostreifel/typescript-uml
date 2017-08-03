@@ -47,6 +47,11 @@ body {
                 border: none;
                 font-size: 1.1em;
                 background: none;
+                font-weight: bold;
+                &.hidden {
+                    color: gray;
+                    text-decoration: line-through;
+                }
                 &:hover {
                     cursor: pointer;
                     outline: 1px solid blue;
