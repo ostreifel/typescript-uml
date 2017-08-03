@@ -125,6 +125,7 @@ function createEdge(ctx: IReferencesContext, from: ts.Symbol, to: ts.Symbol, pos
                 },
             ],
             weight: 1,
+            selectedWeight: 4,
         },
     };
     return edge;

@@ -1,10 +1,12 @@
 
-import { registerGraphActions } from "./graphActions";
-import { IUndoRedoStacks, resetStacks, UndoRedoAction } from "./undoRedo";
+import { graphActions } from "./graphActions";
+import { toggleNodeAction } from "./ToggleNode";
+import { IUndoRedoStacks, resetStacks } from "./undoRedo";
 
-let registeredActions: Array<UndoRedoAction<any>> = [];
 export function resetUndoRedo(cy: Cy.Core, newStacks: IUndoRedoStacks = { undo: [], redo: [] }) {
     resetStacks(newStacks);
-    registeredActions.forEach((a) => a.detach());
-    registeredActions = registerGraphActions(cy);
+    [
+        ...graphActions,
+        toggleNodeAction,
+    ].forEach((a) => a.attach(cy));
 }

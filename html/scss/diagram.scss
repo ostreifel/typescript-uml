@@ -36,12 +36,24 @@ body {
         max-height: 50vh;
         max-width: 300px;
         overflow: auto;
-        padding: 10px;
         background-color: white;
+        > * {
+            margin: 10px;
+        }
         .node {
             .name {
                 margin: 0;
+                padding: 0;
+                border: none;
                 font-size: 1.1em;
+                background: none;
+                &:hover {
+                    cursor: pointer;
+                    outline: 1px solid blue;
+                }
+                &:active {
+                    outline: 1px solid black;
+                }
             }
             .reference-group {
                 h2 {

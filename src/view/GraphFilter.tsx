@@ -113,9 +113,9 @@ class GraphOptions extends React.Component<
         for (const type in types) {
             const nodes = getNodes(this.props.cy.nodes(), (node) => node.data("type") === type);
             if (types[type]) {
-                nodes["show"]();
+                nodes.removeClass("hidden");
             } else {
-                nodes["hide"]();
+                nodes.addClass("hidden");
             }
         }
     }

@@ -5,6 +5,7 @@ import * as ReactDom from "react-dom";
 import { IDiagramFilePosition } from "../diagram/DiagramModel";
 import { getNodes } from "./getEles";
 import { ISelectAction, SelectAction } from "./undoRedo/SelectAction";
+import { toggleNodeAction } from "./undoRedo/ToggleNode";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
 
@@ -143,7 +144,14 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
         const inEdges = node.incomers().edges("");
         const outEdges = node.outgoers().edges("");
         return <div className="node">
-            <h1 className="name" title={getData("id")}>{getData("name")}</h1>
+            <button className="name"
+                role="heading"
+                title={getData("id")}
+                autoFocus={true}
+                onClick={() => toggleNodeAction.push({id: node.id()})}
+            >
+                {getData("name")}
+            </button>
             <div className="type">{getData("type")}</div>
             <PositionLink pos={getData("filePosition")}/>
             {getData("lineCount") > 1 ?

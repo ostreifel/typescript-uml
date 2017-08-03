@@ -13,7 +13,8 @@ export interface IDragActionArgs {
     nodes: Cy.NodeCollection;
 }
 export class DragAction extends UndoRedoAction<IDragActionArgs> {
-    constructor(private readonly cy: Cy.Core) {
+    private cy: Cy.Core;
+    constructor() {
         super("drag");
     }
     public do(args: IDragActionArgs): void {
@@ -27,7 +28,9 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
         moveNodes(diff, args.nodes);
     }
 
-    public attach() {
+    public attach(cy: Cy.Core) {
+        this.detach();
+        this.cy = cy;
         const that = this;
         let lastMouseDownNodeInfo;
         this.cy.on("grab", "node", function(this: Cy.NodeCollection) {
@@ -73,8 +76,12 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
         });
     }
     public detach() {
+        if (!this.cy) {
+            return;
+        }
         this.cy.off("free", "node");
         this.cy.off("grab", "node");
+        this.cy = null;
     }
 }
 
@@ -117,7 +124,8 @@ export interface ILayoutAction {
 }
 export class LayoutAction extends UndoRedoAction<ILayoutAction> {
     private actionInProgress = false;
-    constructor(private readonly cy: Cy.Core) {
+    private cy: Cy.Core;
+    constructor() {
         super("layout");
     }
     public do(args: ILayoutAction): void {
@@ -135,7 +143,9 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         this.actionInProgress = false;
     }
 
-    public attach() {
+    public attach(cy: Cy.Core) {
+        this.detach();
+        this.cy = cy;
         let startPositions: INodePositions;
         this.cy.on("layoutstart", (args) => {
             if (this.actionInProgress) {
@@ -154,17 +164,13 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         });
     }
     public detach() {
+        if (!this.cy) {
+            return;
+        }
         this.cy.off("layoutstart");
         this.cy.off("layoutready");
+        this.cy = null;
     }
 }
 
-export function registerGraphActions(cy: Cy.Core) {
-    const actions = [
-        new DragAction(cy),
-        new LayoutAction(cy),
-    ];
-    actions.forEach((a) => a.attach());
-    return actions;
-
-}
+export const graphActions = [new DragAction(), new LayoutAction()];
