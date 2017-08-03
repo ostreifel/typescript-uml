@@ -64,7 +64,7 @@ export function getCyStyle(): any {
             "opacity": 0.25,
             "text-opacity": 0,
         })
-        .selector(".hidden")
+        .selector(".hidden, .type-hidden")
         .css({
             display: "none",
         });
