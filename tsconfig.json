@@ -16,7 +16,8 @@
         "rootDir": ".",
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "jsx": "react"
+        "jsx": "react",
+        "strictNullChecks": true
     },
     "exclude": [
         "node_modules",

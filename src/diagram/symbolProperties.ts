@@ -78,6 +78,9 @@ function getType(symbol: ts.Symbol): string {
 }
 export function getPositionProperties(symbol: ts.Symbol) {
     let nodeSize = 30;
+    if (!symbol.declarations) {
+        throw new Error("Can only get properties of symbols with declarations");
+    }
     const declaration = symbol.declarations[0];
     const sourceFile = declaration.getSourceFile();
     const startLineChar = sourceFile.getLineAndCharacterOfPosition(declaration.getStart());

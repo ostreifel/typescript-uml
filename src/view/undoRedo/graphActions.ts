@@ -13,7 +13,7 @@ export interface IDragActionArgs {
     nodes: Cy.NodeCollection;
 }
 export class DragAction extends UndoRedoAction<IDragActionArgs> {
-    private cy: Cy.Core;
+    private cy?: Cy.Core;
     constructor() {
         super("drag");
     }
@@ -59,17 +59,19 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
                 };
 
                 let nodes: Cy.NodeCollection;
-                if (node.selected()) {
-                    nodes = that.cy.nodes(":visible").filter(":selected");
-                } else {
-                    nodes = that.cy.collection([node]);
-                }
+                if (that.cy) {
+                    if (node.selected()) {
+                        nodes = that.cy.nodes(":visible").filter(":selected");
+                    } else {
+                        nodes = that.cy.collection([node]);
+                    }
 
-                const param: IDragActionArgs = {
-                    positionDiff,
-                    nodes,
-                };
-                that.push(param, true);
+                    const param: IDragActionArgs = {
+                        positionDiff,
+                        nodes,
+                    };
+                    that.push(param, true);
+                }
 
                 lastMouseDownNodeInfo = null;
             }
@@ -81,7 +83,7 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
         }
         this.cy.off("free", "node");
         this.cy.off("grab", "node");
-        this.cy = null;
+        this.cy = undefined;
     }
 }
 
@@ -124,11 +126,14 @@ export interface ILayoutAction {
 }
 export class LayoutAction extends UndoRedoAction<ILayoutAction> {
     private actionInProgress = false;
-    private cy: Cy.Core;
+    private cy?: Cy.Core;
     constructor() {
         super("layout");
     }
     public do(args: ILayoutAction): void {
+        if (!this.cy) {
+            return;
+        }
         this.actionInProgress = true;
         const presetOptions = presetLayout(args.endPositions);
         const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
@@ -136,6 +141,9 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         this.actionInProgress = false;
     }
     public undo(args: ILayoutAction): void {
+        if (!this.cy) {
+            return;
+        }
         this.actionInProgress = true;
         const presetOptions = presetLayout(args.startPositions);
         const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
@@ -169,7 +177,7 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         }
         this.cy.off("layoutstart");
         this.cy.off("layoutready");
-        this.cy = null;
+        this.cy = undefined;
     }
 }
 

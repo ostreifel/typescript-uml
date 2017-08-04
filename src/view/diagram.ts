@@ -35,6 +35,14 @@ function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
     const elements: Cy.ElementsDefinition = (cy.json() as Cy.CytoscapeOptions).elements as any;
     return [...elements.nodes, ...elements.edges].map((e) => ({ data: e.data, classes: e.classes }));
 }
+function getBaseFileName(filePath: string): string {
+    const baseNameMatch = path.basename(filePath).match(/^(.*?)(.tsx?)?$/);
+    if (!baseNameMatch) {
+        throw new Error(`Could not find the base name for ${filePath}`);
+    }
+    return baseNameMatch[1];
+}
+
 function saveGraph(filePath: string, cy: Cy.Core) {
     const saveData: ISaveData = {
         fileFormatVersion: 1,
@@ -44,7 +52,7 @@ function saveGraph(filePath: string, cy: Cy.Core) {
         hiddenNodes: toggleNodeAction.getHiddenNodes(),
         filePath,
     };
-    const baseFileName = path.basename(filePath).match(/^(.*?)(.tsx?)?$/)[1];
+    const baseFileName = getBaseFileName(filePath);
     const defaultPath = `${baseFileName}.${fileExtension}`;
     remote.dialog.showSaveDialog({
         filters: fileFilters,

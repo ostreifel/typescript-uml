@@ -31,7 +31,7 @@ function isLocal(parent: ts.Node, child: ts.NamedDeclaration) {
         return false;
     }
     const candidateLocal = locals.get(child.name.text);
-    if (!candidateLocal.declarations || !candidateLocal.declarations.length) {
+    if (!candidateLocal || !candidateLocal.declarations || !candidateLocal.declarations.length) {
         return false;
     }
     const candidateNode = candidateLocal.declarations[0];
@@ -45,7 +45,7 @@ function getSymbolId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
     let currNode = symbol.declarations[0] as ts.NamedDeclaration;
     const idParts: string[] = [];
     while (currNode) {
-        if (isLocal(ctx.sourceFile, currNode)) {
+        if (currNode.name && isLocal(ctx.sourceFile, currNode)) {
             idParts.unshift(currNode.name.getText());
             idParts.unshift(ctx.sourceFile.fileName);
             return idParts.join(".");
@@ -60,14 +60,14 @@ function getSymbolId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
     return null;
 }
 
-function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null {
+function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | undefined {
     if (
         !symbol ||
         !symbol.declarations ||
         !symbol.declarations.length ||
         !symbol.declarations[0].parent
     ) {
-        return null;
+        return undefined;
     }
     let parentNode = symbol.declarations[0].parent as ts.NamedDeclaration;
     while (
@@ -77,18 +77,20 @@ function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | null 
     ) {
         parentNode = parentNode.parent as ts.NamedDeclaration;
     }
-    return parentNode && getSymbolId(ctx, parentNode["symbol"]);
+    return parentNode && getSymbolId(ctx, parentNode["symbol"]) || undefined;
 }
 
 function getGraphNodeContainingPos(graphNodes: IGraphNode[], pos: number): IGraphNode | null {
     let currNode: IGraphNode | null = null;
     let currNodeLength: number = Infinity;
     for (const graphNode of graphNodes) {
-        const node = graphNode.symbol.declarations[0];
-        const nodeLength = node.end - node.pos;
-        if (node.pos <= pos && node.end > pos && currNodeLength > nodeLength) {
-            currNode = graphNode;
-            currNodeLength = nodeLength;
+        if (graphNode.symbol.declarations) {
+            const node = graphNode.symbol.declarations[0];
+            const nodeLength = node.end - node.pos;
+            if (node.pos <= pos && node.end > pos && currNodeLength > nodeLength) {
+                currNode = graphNode;
+                currNodeLength = nodeLength;
+            }
         }
     }
     return currNode;

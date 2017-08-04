@@ -6,7 +6,7 @@ export interface ISelectAction extends IActionArgs {
     endSelect: string;
 }
 export class SelectAction extends UndoRedoAction<ISelectAction> {
-    private cy: Cy.Core;
+    private cy?: Cy.Core;
     constructor(
         private readonly onSelect: (ele: Cy.CollectionElements) => void,
         private readonly onUnselect: (ele: Cy.CollectionElements) => void,
@@ -26,10 +26,10 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         this.cy = cy;
     }
     public detach() {
-        this.cy = null;
+        this.cy = undefined;
     }
     private select(id: string): void {
-        if (!id) {
+        if (!id || !this.cy) {
             return;
         }
         const ele = getEles(
@@ -47,7 +47,7 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         node.outgoers().edges("").addClass("outgoing");
     }
     private unselect(id: string): void {
-        if (!id) {
+        if (!id || !this.cy) {
             return;
         }
         const ele = getEles(

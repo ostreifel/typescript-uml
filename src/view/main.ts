@@ -12,7 +12,7 @@ const [, , extensionPath] = process.argv;
 console.log("args", process.argv);
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow: Electron.BrowserWindow;
+let mainWindow: Electron.BrowserWindow | null;
 function createWindow() {
     global["diagramArgs"] = process.argv;
     // Create the browser window.
@@ -33,7 +33,9 @@ function createWindow() {
     }));
 
     mainWindow.once("ready-to-show", () => {
-        mainWindow.show();
+        if (mainWindow) {
+            mainWindow.show();
+        }
     });
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

@@ -11,7 +11,7 @@ import { toggleTypeAction } from "./undoRedo/ToggleType";
 const infoElement = document.getElementsByClassName("element-info")[0];
 
 class GraphHighlights {
-    private cy: Cy.Core;
+    private cy?: Cy.Core;
     private selectAction = new SelectAction(showInfo, hideInfo);
     private targetId: string;
     public getSelectedId() {
@@ -36,7 +36,7 @@ class GraphHighlights {
     }
     public detach() {
         this.selectAction.detach();
-        this.cy = null;
+        this.cy = undefined;
     }
 }
 const highlighted = new GraphHighlights();
@@ -70,12 +70,12 @@ function onClick(e: Cy.EventObject, syntheticEvent?: boolean) {
     ) {
         highlighted.select(target, syntheticEvent);
     } else {
-        highlighted.select(null);
+        highlighted.select(undefined);
     }
     return;
 }
 
-let curr: Cy.CollectionElements = null;
+let curr: Cy.CollectionElements | null = null;
 function showInfo(target: Cy.CollectionElements) {
     if (!curr || curr.id() !== target.id()) {
         if (curr) {
@@ -99,8 +99,10 @@ function showInfo(target: Cy.CollectionElements) {
 
 function hideInfo() {
     infoElement.innerHTML = "";
-    curr.off("style");
-    curr = null;
+    if (curr) {
+        curr.off("style");
+        curr = null;
+    }
 }
 function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);

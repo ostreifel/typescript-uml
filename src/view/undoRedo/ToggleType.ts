@@ -5,7 +5,7 @@ export interface IFilterActionArgs {
     type: string;
 }
 class ToggleTypeAction extends UndoRedoAction<IFilterActionArgs> {
-    private cy: Cy.Core;
+    private cy?: Cy.Core;
     constructor() {
         super("toggle-type");
     }
@@ -20,9 +20,12 @@ class ToggleTypeAction extends UndoRedoAction<IFilterActionArgs> {
         this.cy = cy;
     }
     public detach() {
-        this.cy = null;
+        this.cy = undefined;
     }
     private toggle(type: string) {
+        if (!this.cy) {
+            return;
+        }
         getNodes(this.cy.nodes(), (n) => n.data("type") === type).toggleClass("hidden-type");
     }
 }
