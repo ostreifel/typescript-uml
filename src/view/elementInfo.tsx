@@ -17,17 +17,13 @@ class GraphHighlights {
     public getSelectedId() {
         return this.targetId;
     }
-    public select(ele?: Cy.CollectionElements, syntheticEvent: boolean = false): void {
+    public select(ele?: Cy.CollectionElements): void {
         const args: ISelectAction = {
             startSelect: this.targetId,
             endSelect: ele ? ele.id() : "",
         };
         this.targetId = args.endSelect;
         this.selectAction.push(args);
-        if (ele && !syntheticEvent) {
-            // Select state will be toggled after click events
-            ele.unselect();
-        }
     }
     public attach(cy: Cy.Core) {
         this.detach();
@@ -47,13 +43,13 @@ export function registerInfoPane(
 ) {
     highlighted.attach(cy);
     cy.on("click", onClick);
+    cy.elements().unselectify();
 
     if (startSelect) {
         const node = getNodes(cy.nodes(), (n) => n.id() === startSelect);
-        // tslint:disable-next-line:no-any
-        node.trigger("click", [true as any]);
+        node.trigger("click");
     } else {
-        cy.trigger("click", [true]);
+        cy.trigger("click");
     }
 }
 export function getInfoPaneState(): string {
@@ -63,13 +59,13 @@ export function getInfoPaneState(): string {
 /**
  * @param supressToggle whether this was manually called by trigger
  */
-function onClick(e: Cy.EventObject, syntheticEvent?: boolean) {
+function onClick(e: Cy.EventObject) {
     const target: Cy.CollectionElements = e.target;
 
     if (
         target.id && highlighted.getSelectedId() !== target.id()
     ) {
-        highlighted.select(target, syntheticEvent);
+        highlighted.select(target);
     } else {
         highlighted.select(undefined);
     }
@@ -123,8 +119,7 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
         </a>;
     }
     private selectNode() {
-        // tslint:disable-next-line:no-any
-        this.props.node.trigger("click", [true as any]);
+        this.props.node.trigger("click");
     }
 }
 class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {

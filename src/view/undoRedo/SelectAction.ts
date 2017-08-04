@@ -39,7 +39,9 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         if (ele.isNode()) {
             this.addNodeEdgeHighlights(ele as Cy.NodeCollection);
         }
+        ele.selectify();
         ele.select();
+        ele.unselectify();
         this.onSelect(ele);
     }
     private addNodeEdgeHighlights(node: Cy.NodeCollection) {
@@ -57,7 +59,9 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         if (ele.isNode()) {
             this.removeNodeEdgeHighlights(ele as Cy.NodeCollection);
         }
+        ele.selectify();
         ele.unselect();
+        ele.unselectify();
         this.onUnselect(ele);
     }
     private removeNodeEdgeHighlights(node: Cy.NodeCollection) {
