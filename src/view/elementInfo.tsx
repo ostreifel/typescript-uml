@@ -50,6 +50,7 @@ export function registerInfoPane(
 
     if (startSelect) {
         const node = getNodes(cy.nodes(), (n) => n.id() === startSelect);
+        // tslint:disable-next-line:no-any
         node.trigger("click", [true as any]);
     } else {
         cy.trigger("click", [true]);
@@ -122,6 +123,7 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
         </a>;
     }
     private selectNode() {
+        // tslint:disable-next-line:no-any
         this.props.node.trigger("click", [true as any]);
     }
 }

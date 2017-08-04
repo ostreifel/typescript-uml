@@ -32,7 +32,7 @@ interface ISaveData {
 }
 
 function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
-    const elements: Cy.ElementsDefinition = (cy.json() as Cy.CytoscapeOptions).elements as any;
+    const elements = (cy.json() as Cy.CytoscapeOptions).elements as Cy.ElementsDefinition;
     return [...elements.nodes, ...elements.edges].map((e) => ({ data: e.data, classes: e.classes }));
 }
 function getBaseFileName(filePath: string): string {

@@ -21,7 +21,8 @@
         "prefer-for-of": false,
         "max-classes-per-file": [
             false
-        ]
+        ],
+        "no-any": true
     },
     "rulesDirectory": []
 }

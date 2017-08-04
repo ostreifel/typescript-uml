@@ -136,6 +136,7 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         }
         this.actionInProgress = true;
         const presetOptions = presetLayout(args.endPositions);
+        // tslint:disable-next-line:no-any
         const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
         layout.run();
         this.actionInProgress = false;
@@ -146,6 +147,7 @@ export class LayoutAction extends UndoRedoAction<ILayoutAction> {
         }
         this.actionInProgress = true;
         const presetOptions = presetLayout(args.startPositions);
+        // tslint:disable-next-line:no-any
         const layout: Cy.Layouts = this.cy.layout(presetOptions) as any;
         layout.run();
         this.actionInProgress = false;

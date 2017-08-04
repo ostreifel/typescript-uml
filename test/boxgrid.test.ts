@@ -16,6 +16,7 @@ import { BoxGridLayout, INodeHierarchy } from "../src/view/Layouts";
 // Defines a Mocha test suite to group tests of similar kind together
 suite("layout tests", function(this: ISuiteCallbackContext) {
 
+    // tslint:disable-next-line:no-any
     const layout = new BoxGridLayout(null as any);
     const getGrid = (nodes: INodeHierarchy) => layout["calcPosGrid"](nodes);
     test("sanity check", function(this: ITestCallbackContext) {
