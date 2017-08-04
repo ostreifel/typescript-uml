@@ -6,6 +6,7 @@ import { IDiagramFilePosition } from "../diagram/DiagramModel";
 import { getNodes } from "./getEles";
 import { ISelectAction, SelectAction } from "./undoRedo/SelectAction";
 import { toggleNodeAction } from "./undoRedo/ToggleNode";
+import { toggleTypeAction } from "./undoRedo/ToggleType";
 
 const infoElement = document.getElementsByClassName("element-info")[0];
 
@@ -95,6 +96,11 @@ class NodeLink extends React.Component<{node: Cy.NodeCollection}, {}> {
         return <a href="#"
             onClick={() => this.selectNode()}
             title={this.props.node.id()}
+            onKeyDown={(e) => {
+                if (e.keyCode === 32) {
+                    this.selectNode();
+                }
+            }}
         >
             {this.props.node.data("name")}
         </a>;
@@ -121,7 +127,16 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
 }
 class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     public render() {
-        return <a className="line" onClick={this.focusLine.bind(this)} href="#">
+        return <a
+            className="line"
+            onClick={() => this.focusLine()}
+            onKeyDown={(e) => {
+                if (e.keyCode === 32) {
+                    this.focusLine();
+                }
+            }}
+            href="#"
+        >
             {this.posName(this.props.pos)}
         </a>;
     }
@@ -149,13 +164,21 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
                 title={getData("id")}
                 autoFocus={true}
                 onClick={() => {
-                    showNode(this.props.node);
                     toggleNodeAction.push({id: node.id()});
+                    showNode(this.props.node);
                 }}
             >
                 {getData("name")}
             </button>
-            <div className="type">{getData("type")}</div>
+            <button
+                className={`type ${node.hasClass("hidden-type") ? "hidden" : ""}`}
+                onClick={() => {
+                    toggleTypeAction.push({type: getData("type")});
+                    showNode(this.props.node);
+                }}
+            >
+                {getData("type")}
+            </button>
             <PositionLink pos={getData("filePosition")}/>
             {getData("lineCount") > 1 ?
                 <div>

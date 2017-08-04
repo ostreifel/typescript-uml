@@ -41,13 +41,12 @@ body {
             margin: 10px;
         }
         .node {
-            .name {
+            button {
                 margin: 0;
                 padding: 0;
-                border: none;
-                font-size: 1.1em;
                 background: none;
-                font-weight: bold;
+                border: none;
+                display: block;
                 &.hidden {
                     color: gray;
                     text-decoration: line-through;
@@ -59,6 +58,10 @@ body {
                 &:active {
                     outline: 1px solid black;
                 }
+            }
+            .name {
+                font-size: 1.1em;
+                font-weight: bold;
             }
             .reference-group {
                 h2 {

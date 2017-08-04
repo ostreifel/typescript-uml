@@ -4,7 +4,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { getInfoPaneState, registerInfoPane } from "./elementInfo";
-import { getCurrentFilterState, IFilterData, registerFilterPane } from "./GraphFilter";
 import {
     applyLayout,
     boxGridLayout,
@@ -14,8 +13,8 @@ import {
 } from "./Layouts";
 import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
-import { redo, undo } from "./undoRedo/undoRedo";
 import { IHiddenNodes, toggleNodeAction } from "./undoRedo/ToggleNode";
+import { redo, undo } from "./undoRedo/undoRedo";
 
 const fileExtension = "tsgraph.json";
 const fileFilters: Electron.FileFilter[] = [{
@@ -29,13 +28,12 @@ interface ISaveData {
     positions: INodePositions;
     filePath: string;
     infoPanelState: string;
-    filterPanelState: IFilterData;
     hiddenNodes: IHiddenNodes;
 }
 
 function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
     const elements: Cy.ElementsDefinition = (cy.json() as Cy.CytoscapeOptions).elements as any;
-    return [...elements.nodes, ...elements.edges].map((e) => ({ data: e.data }));
+    return [...elements.nodes, ...elements.edges].map((e) => ({ data: e.data, classes: e.classes }));
 }
 function saveGraph(filePath: string, cy: Cy.Core) {
     const saveData: ISaveData = {
@@ -43,7 +41,6 @@ function saveGraph(filePath: string, cy: Cy.Core) {
         elements: getElements(cy),
         positions: getPositions(cy.nodes()),
         infoPanelState: getInfoPaneState(),
-        filterPanelState: getCurrentFilterState(),
         hiddenNodes: toggleNodeAction.getHiddenNodes(),
         filePath,
     };
@@ -144,7 +141,6 @@ function applyDefaultLayout(cy: Cy.Core) {
 function updateUI(
     {
         filePath,
-        filterPanelState,
         infoPanelState,
         elements,
     }: ISaveData,
@@ -159,7 +155,6 @@ function updateUI(
     });
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
-    registerFilterPane(cy, filterPanelState);
     resetUndoRedo(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     return cy;
@@ -169,7 +164,6 @@ function loadInitial(filePath: string) {
     const cy = updateUI({
         elements,
         filePath,
-        filterPanelState: { showFilter: false, types: {} },
         infoPanelState: "",
     } as ISaveData);
     applyDefaultLayout(cy);
