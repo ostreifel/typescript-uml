@@ -75,7 +75,19 @@ function onClick(e: Cy.EventObject, syntheticEvent?: boolean) {
     return;
 }
 
+let curr: Cy.CollectionElements = null;
 function showInfo(target: Cy.CollectionElements) {
+    if (!curr || curr.id() !== target.id()) {
+        if (curr) {
+            curr.off("style");
+        }
+        target.on("style",
+            () => {
+                showInfo(target);
+            },
+        );
+        curr = target;
+    }
     if (target.isNode()) {
         const node = target as Cy.NodeCollection;
         showNode(node);
@@ -87,6 +99,8 @@ function showInfo(target: Cy.CollectionElements) {
 
 function hideInfo() {
     infoElement.innerHTML = "";
+    curr.off("style");
+    curr = null;
 }
 function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
@@ -165,7 +179,6 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
                 autoFocus={true}
                 onClick={() => {
                     toggleNodeAction.push({id: node.id()});
-                    showNode(this.props.node);
                 }}
             >
                 {getData("name")}
@@ -174,7 +187,6 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
                 className={`type ${node.hasClass("hidden-type") ? "hidden" : ""}`}
                 onClick={() => {
                     toggleTypeAction.push({type: getData("type")});
-                    showNode(this.props.node);
                 }}
             >
                 {getData("type")}
