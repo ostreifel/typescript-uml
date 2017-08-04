@@ -136,6 +136,14 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
         super.visitVariableDeclaration(node);
     }
+    public visitEnumDeclaration(node: ts.EnumDeclaration): void {
+        this.storeNodeReferences(node);
+        super.visitEnumDeclaration(node);
+    }
+    public visitEnumMember(node: ts.EnumMember): void {
+        this.storeNodeReferences(node);
+        super.visitEnumMember(node);
+    }
     private storeNodeReferences(node: ts.NamedDeclaration) {
         const position = node.name && node.name.kind === ts.SyntaxKind.Identifier ? node.name.getStart() : node.getStart();
 

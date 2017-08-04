@@ -56,4 +56,11 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const nodeNames = nodes.map((n) => n.data.name);
         assert.deepEqual(["moduleVariable", "moduleFunction"], nodeNames);
     });
+    test("enum", function(this: ITestCallbackContext) {
+        const { sourceFile } = compile("enum.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
+        walker.walk(sourceFile);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
+        assert.deepEqual(["Enum1", "Member1", "Member2"], idents);
+    });
 });
