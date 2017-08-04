@@ -1,4 +1,4 @@
-const actions: { [key: string]: UndoRedoAction<any> } = {};
+const actions: { [key: string]: UndoRedoAction<IActionArgs> } = {};
 
 export interface IUndoRedoStacks {
     redo: IStoredAction[];
@@ -67,4 +67,8 @@ export function undo() {
 
 export function resetStacks(newStacks: IUndoRedoStacks) {
     stacks = newStacks;
+}
+
+export function getUndoRedoStacks(): IUndoRedoStacks {
+    return stacks;
 }

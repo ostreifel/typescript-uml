@@ -14,7 +14,7 @@ import {
 import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
 import { IHiddenNodes, toggleNodeAction } from "./undoRedo/ToggleNode";
-import { redo, undo } from "./undoRedo/undoRedo";
+import { getUndoRedoStacks, IUndoRedoStacks, redo, undo } from "./undoRedo/undoRedo";
 
 const fileExtension = "tsgraph.json";
 const fileFilters: Electron.FileFilter[] = [{
@@ -29,6 +29,7 @@ interface ISaveData {
     filePath: string;
     infoPanelState: string;
     hiddenNodes: IHiddenNodes;
+    undoRedoStacks: IUndoRedoStacks;
 }
 
 function getElements(cy: Cy.Core): Cy.ElementDefinition[] {
@@ -50,6 +51,7 @@ function saveGraph(filePath: string, cy: Cy.Core) {
         positions: getPositions(cy.nodes()),
         infoPanelState: getInfoPaneState(),
         hiddenNodes: toggleNodeAction.getHiddenNodes(),
+        undoRedoStacks: getUndoRedoStacks(),
         filePath,
     };
     const baseFileName = getBaseFileName(filePath);
@@ -79,6 +81,7 @@ function loadGraph() {
             const cy = updateUI(data);
             applyLayout(cy.nodes(), presetLayout(data.positions));
             toggleNodeAction.restoreHiddenNodes(data.hiddenNodes);
+            resetUndoRedo(cy, data.undoRedoStacks);
         });
     });
 }

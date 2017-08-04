@@ -10,7 +10,7 @@ export interface IPositionDiff {
 
 export interface IDragActionArgs {
     positionDiff: IPositionDiff;
-    nodes: Cy.NodeCollection;
+    id: string;
 }
 export class DragAction extends UndoRedoAction<IDragActionArgs> {
     private cy?: Cy.Core;
@@ -18,14 +18,20 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
         super("drag");
     }
     public do(args: IDragActionArgs): void {
-        moveNodes(args.positionDiff, args.nodes);
+        if (!this.cy) {
+            return;
+        }
+        moveNodes(args.positionDiff, getNodes(this.cy.nodes(), (n) => n.id() === args.id));
     }
     public undo(args: IDragActionArgs): void {
+        if (!this.cy) {
+            return;
+        }
         const diff: IPositionDiff = {
             x: -1 * args.positionDiff.x,
             y: -1 * args.positionDiff.y,
         };
-        moveNodes(diff, args.nodes);
+        moveNodes(diff, getNodes(this.cy.nodes(), (n) => n.id() === args.id));
     }
 
     public attach(cy: Cy.Core) {
@@ -68,7 +74,7 @@ export class DragAction extends UndoRedoAction<IDragActionArgs> {
 
                     const param: IDragActionArgs = {
                         positionDiff,
-                        nodes,
+                        id: nodes.id(),
                     };
                     that.push(param, true);
                 }
