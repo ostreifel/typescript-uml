@@ -1,0 +1,96 @@
+/*
+Note that this similar to but not actually css.
+See http://js.cytoscape.org/#style
+*/
+node {
+    color: white;
+    shape: ellipse;
+    content: data(name);
+    height: data(nodeSize);
+    width: data(nodeSize);
+    text-outline-color: black;
+    text-outline-width: 2;
+    text-valign: center;
+    border-color: black;
+    border-opacity: 1;
+    border-width: 3;
+    border-style: solid;
+    &[type='class'], &[type='enum'], &[type='enum'], &[type='interface'], &[type='module'], &[type='type alias'] {
+        shape: rectangle;
+    }
+    &[type='variable'], &[type='alias'],&[type='property'], &[type='type parameter'], &[type='enum member'] {
+        shape: diamond;
+    }
+    &[type='class'] {
+        background-color: darkblue;
+    }
+    &[type='interface'], &[type='type alias'] {
+        background-color: blue;
+    }
+    &[type='method'], &[type='property'] {
+        background-color: lightblue;
+    }
+    &[type='type parameter'] {
+        background-color: #2a7189;
+    }
+    &[type='contructor'] {
+        background-color: #2b6378;
+    }
+    &[type='function'] {
+        background-color: purple;
+    }
+    &[type='variable'] {
+        background-color: orange;
+    }
+    &[type='enum'] {
+        background-color: darkgray;
+    }
+    &[type='enum member'] {
+        background-color: gray;
+    }
+    &[type='alias'] {
+        background-color: red;
+    }
+    &[type='module'] {
+        background-color: green;
+    }
+    &:parent {
+        text-valign: top;
+    }
+    &:selected {
+        border-color: white;
+        border-opacity: 1;
+        border-width: 5;
+        border-style: solid;
+    }
+    &.hidden, &.hidden-type {
+        display: none;
+    }
+}
+edge {
+    curve-style: bezier;
+    line-color: white;
+    target-arrow-color: white;
+    target-arrow-shape: triangle;
+    width: data(weight);
+    &:selected {
+        // dark yellow
+        line-color: #c4c400;
+        source-arrow-color: #c4c400;
+        target-arrow-color: #c4c400;
+        width: data(selectedWeight);
+    }
+    &.outgoing {
+        // dark orange
+        line-color: #d68f00;
+        source-arrow-color: #d68f00;
+        target-arrow-color: #d68f00;
+        width: data(selectedWeight);
+    }
+    &.incoming {
+        line-color: red;
+        source-arrow-color: red;
+        target-arrow-color: red;
+        width: data(selectedWeight);
+    }
+}

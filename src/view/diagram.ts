@@ -161,7 +161,8 @@ function updateUI(
         container: $("#cy")[0], elements,
         boxSelectionEnabled: false,
         selectionType: "additive",
-        style: getCyStyle(),
+        // tslint:disable-next-line:no-any
+        style: getCyStyle() as any,
         layout: { name: "null" } as Cy.NullLayoutOptions,
     });
     setMenuItems(filePath, cy);

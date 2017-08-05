@@ -1,53 +1,6 @@
 import * as ts from "typescript";
 import { IDiagramFilePosition } from "./DiagramModel";
 
-function getColor(symbol: ts.Symbol): Cy.Css.Colour {
-    if (symbol.flags & ts.SymbolFlags.Class) {
-        return "darkblue";
-    } else if (symbol.flags & ts.SymbolFlags.Interface) {
-        return "blue";
-    } else if (symbol.flags & ts.SymbolFlags.ClassMember) {
-        return "lightblue";
-    } else if (symbol.flags & ts.SymbolFlags.TypeParameter) {
-        return "#2a7189"; // dark light blue
-    } else if (symbol.flags & ts.SymbolFlags.Constructor) {
-        return "#2b6378"; // darker light blue
-    } else if (symbol.flags & ts.SymbolFlags.Function) {
-        return "purple";
-    } else if (symbol.flags & ts.SymbolFlags.Variable) {
-        return "orange";
-    } else if (symbol.flags & ts.SymbolFlags.Enum) {
-        return "darkgray";
-    } else if (symbol.flags & ts.SymbolFlags.EnumMember) {
-        return "gray";
-    } else if (symbol.flags & ts.SymbolFlags.Alias) {
-        return "red";
-    } else if (symbol.flags & ts.SymbolFlags.Module) {
-        return "green";
-    }
-    return "pink";
-}
-
-function getShape(symbol: ts.Symbol): Cy.Css.NodeShape {
-    if (
-        symbol.flags & ts.SymbolFlags.Class ||
-        symbol.flags & ts.SymbolFlags.Enum ||
-        symbol.flags & ts.SymbolFlags.Interface ||
-        symbol.flags & ts.SymbolFlags.Module
-    ) {
-        return "rectangle";
-    } else if (
-        symbol.flags & ts.SymbolFlags.Variable ||
-        symbol.flags & ts.SymbolFlags.Alias ||
-        symbol.flags & ts.SymbolFlags.Property ||
-        symbol.flags & ts.SymbolFlags.TypeParameter ||
-        symbol.flags & ts.SymbolFlags.EnumMember
-    ) {
-        return "diamond";
-    }
-    return "ellipse";
-}
-
 function getType(symbol: ts.Symbol): string {
     if (symbol.flags & ts.SymbolFlags.Class) {
         return "class";
@@ -106,8 +59,6 @@ export function getPositionProperties(symbol: ts.Symbol) {
 
 export function getSymbolProperties(symbol: ts.Symbol) {
     return {
-        color: getColor(symbol),
-        shape: getShape(symbol),
         type: getType(symbol),
         ...getPositionProperties(symbol),
     };
