@@ -77,6 +77,7 @@ export class BoxGridLayout {
         const position = (n: Cy.NodeSingular) => positions[n.id()];
         return {
             name: "grid",
+            // tslint:disable-next-line:no-any
             position: position as any, // typing here is wrong
             condense: true,
             avoidOverlapPadding: padding,
@@ -123,9 +124,14 @@ export class BoxGridLayout {
         if (posGrid.length < 1) {
             return;
         }
-        const width = posGrid[0].length;
+        let maxWidth = 0;
         for (const row of posGrid) {
-            while (row.length < width) {
+            if (row.length > maxWidth) {
+                maxWidth = row.length;
+            }
+        }
+        for (const row of posGrid) {
+            while (row.length < maxWidth) {
                 row[row.length] = "";
             }
         }
@@ -190,6 +196,7 @@ export class BoxGridLayout {
 }
 
 export function applyLayout(nodes: Cy.NodeCollection, layoutOptions: Cy.LayoutOptions) {
+    // tslint:disable-next-line:no-any
     const layout: Cy.Layouts = nodes.layout(layoutOptions) as any;
     layout.run();
 }
