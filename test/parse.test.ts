@@ -68,7 +68,7 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const walker = new NodeReferenceWalker(sourceFile);
         walker.walk(sourceFile);
         const idents = walker.graphNodes.map((n) => n.symbol.getName());
-        assert.deepEqual(["IInterface1", "property1", "property2"], idents);
+        assert.deepEqual(["IInterface1", "property1", "property2", "method1"], idents);
     });
     // Sometimes something that should be detected like a function is placed
     // inside something that should not be detected like a variable in a method.

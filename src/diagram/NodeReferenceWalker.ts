@@ -113,6 +113,11 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         super.visitPropertySignature(node);
     }
 
+    public visitMethodSignature(node: ts.SignatureDeclaration): void {
+        this.storeNodeReferences(node);
+        super.visitMethodSignature(node);
+    }
+
     public visitClassDeclaration(node: ts.ClassDeclaration): void {
         this.storeNodeReferences(node);
         super.visitClassDeclaration(node);
