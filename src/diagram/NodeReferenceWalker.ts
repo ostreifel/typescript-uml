@@ -122,6 +122,10 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.storeNodeReferences(node);
         super.visitClassDeclaration(node);
     }
+    public visitTypeAliasDeclaration(node: ts.TypeAliasDeclaration): void {
+        this.storeNodeReferences(node);
+        super.visitTypeAliasDeclaration(node);
+    }
 
     public visitBindingElement(node: ts.BindingElement) {
         if (!this.inFunction && !this.inMethod) {

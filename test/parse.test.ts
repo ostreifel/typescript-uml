@@ -82,4 +82,11 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const [, , ...parentIdParts] = child.data.parent ? child.data.parent.split(".") : [];
         assert.deepEqual(parentIdParts, ["function1"]);
     });
+    test("type", function(this: ITestCallbackContext) {
+        const { sourceFile } = compile("type.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
+        walker.walk(sourceFile);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
+        assert.deepEqual(["Type1", "prop1", "method1"], idents);
+    });
 });
