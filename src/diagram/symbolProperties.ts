@@ -73,6 +73,8 @@ function getType(symbol: ts.Symbol): string {
         return "alias";
     } else if (symbol.flags & ts.SymbolFlags.Module) {
         return "module";
+    } else if (symbol.flags & ts.SymbolFlags.TypeAlias) {
+        return "type alias";
     }
     return "";
 }
