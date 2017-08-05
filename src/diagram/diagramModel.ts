@@ -7,12 +7,9 @@ export interface IDiagramNodeData extends Cy.NodeDataDefinition {
     id: string;
     name: string;
     parent?: string;
-    shape: Cy.Css.NodeShape;
     filePosition: IDiagramFilePosition;
     lineCount: number;
     nodeSize: number;
-    /** CSS color value */
-    color: string;
     type: string;
 }
 
