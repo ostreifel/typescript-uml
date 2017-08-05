@@ -73,9 +73,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitInterfaceDeclaration(node: ts.InterfaceDeclaration) {
         this.storeNodeReferences(node);
-        this.inMethod = true;
         super.visitInterfaceDeclaration(node);
-        this.inMethod = false;
     }
 
     public visitMethodDeclaration(node: ts.MethodDeclaration) {

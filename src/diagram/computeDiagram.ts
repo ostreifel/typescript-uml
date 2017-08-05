@@ -72,8 +72,11 @@ function getParentId(ctx: IReferencesContext, symbol: ts.Symbol): string | undef
     let parentNode = symbol.declarations[0].parent as ts.NamedDeclaration;
     while (
         parentNode &&
-        (!parentNode.name ||
-        parentNode.name.kind !== ts.SyntaxKind.Identifier)
+        (
+            !parentNode.name ||
+            parentNode.name.kind !== ts.SyntaxKind.Identifier ||
+            !((getSymbolId(ctx, parentNode["symbol"]) || "") in ctx.nodes)
+        )
     ) {
         parentNode = parentNode.parent as ts.NamedDeclaration;
     }
@@ -189,7 +192,6 @@ function computeDiagram(
                 data: {
                     id,
                     name: graphNode.symbol.getName(),
-                    parent: getParentId(ctx, graphNode.symbol),
                     ...getSymbolProperties(graphNode.symbol),
                 },
             };
@@ -197,6 +199,11 @@ function computeDiagram(
             ctx.nodes[node.data.id] = node;
             validNodes.push(graphNode);
         }
+    }
+    setStatus("Computing parents...");
+    for (const graphNode of validNodes) {
+        const id = getSymbolId(ctx, graphNode.symbol) as string;
+        ctx.nodes[id].data.parent = getParentId(ctx, graphNode.symbol);
     }
     setStatus("Computing edges...");
     elements.push(...getEdges(ctx, validNodes));

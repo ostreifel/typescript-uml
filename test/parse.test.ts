@@ -63,4 +63,23 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const idents = walker.graphNodes.map((n) => n.symbol.getName());
         assert.deepEqual(["Enum1", "Member1", "Member2"], idents);
     });
+    test("interface", function(this: ITestCallbackContext) {
+        const { sourceFile } = compile("interface.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
+        walker.walk(sourceFile);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
+        assert.deepEqual(["IInterface1", "property1", "property2"], idents);
+    });
+    // Sometimes something that should be detected like a function is placed
+    // inside something that should not be detected like a variable in a method.
+    // In that case the parent should be the first visible node.
+    test("nested inheritance", function(this: ITestCallbackContext) {
+        const filePath = toFilePath("skipParent.ts");
+        const diagram = computeDiagramForFile(filePath, () => undefined) as IDiagramNode[];
+        const [child] = diagram.filter((e) => e.data.name && e.data.name === "getValue");
+        assert.notEqual(child, undefined, "Could not find child");
+        assert.notStrictEqual(child.data.parent, undefined, "parent not found");
+        const [, , ...parentIdParts] = child.data.parent ? child.data.parent.split(".") : [];
+        assert.deepEqual(parentIdParts, ["function1"]);
+    });
 });
