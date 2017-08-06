@@ -39,6 +39,7 @@ body {
             margin: 0px;
         }
         .search-results .result-item {
+            cursor: pointer;
             &.focus {
                 background-color: skyblue;
                 outline: 1px solid black;

@@ -11,7 +11,9 @@ interface IReferencesContext {
 }
 
 function getFileContext(fileName: string): IReferencesContext {
-    const program = ts.createProgram([fileName], {});
+    const program = ts.createProgram([fileName], {
+        allowJs: true,
+    });
     const sourceFile = program.getSourceFile(fileName);
     const typechecker = program.getTypeChecker();
     return {
@@ -211,6 +213,7 @@ function computeDiagram(
 }
 
 export function computeDiagramForFile(fileName: string, setStatus: (status: string) => void): IDiagramElement[] {
+    setStatus("Compiling file...");
     const ctx: IReferencesContext = getFileContext(fileName);
     return computeDiagram(ctx, setStatus);
 }

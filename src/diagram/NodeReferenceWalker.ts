@@ -3,7 +3,7 @@ import * as ts from "typescript";
 
 function createLanguageServiceHost(fileName: string, source: string): ts.LanguageServiceHost {
     return {
-        getCompilationSettings: () => ({}),
+        getCompilationSettings: () => ({allowJs: true}),
         getCurrentDirectory: () => "",
         getDefaultLibFileName: () => "lib.d.ts",
         getScriptFileNames: () => [fileName],
