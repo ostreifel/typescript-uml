@@ -67,6 +67,7 @@ function onClick(e: Cy.EventObject) {
     ) {
         highlighted.select(target);
     } else {
+        $(".search-box input").blur();
         highlighted.select(undefined);
     }
     return;

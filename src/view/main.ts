@@ -8,8 +8,6 @@ import * as path from "path";
 import * as url from "url";
 
 const [, , extensionPath] = process.argv;
-// tslint:disable-next-line:no-console
-console.log("args", process.argv);
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: Electron.BrowserWindow | null;

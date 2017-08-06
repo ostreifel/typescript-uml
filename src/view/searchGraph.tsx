@@ -27,7 +27,7 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
     selected: number,
     focusButton: boolean,
 }> {
-    private reset?: () => void;
+    private supressCancel: boolean;
     constructor(props) {
         super(props);
         this.state = {focusButton: true, searchString: "", selected: 0, showSearch: false};
@@ -44,24 +44,31 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
                     onChanged={(searchString) => this.updateResults(searchString)}
                     onArrowDown={() => this.onArrowDown(nodeCount)}
                     onArrowUp={() => this.onArrowUp()}
-                    setReset={(reset) => this.reset = reset}
-                    onCancel={() => this.setState({showSearch: false, searchString: "", selected: 0, focusButton: true})}
+                    onCancel={() => this.onCancel()}
                 />,
                 <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />] :
                 <IconButton
                     iconProps={{iconName: "Search"}}
-                    onClick={() => this.setState({...this.state, showSearch: true})}
+                    onClick={() => this.showSearch()}
                     autoFocus={this.state.focusButton}
                     className="toggle-search"
+                    title="Search (Ctr + F)"
                 />
             }
         </div>;
     }
+    private showSearch() {
+        this.supressCancel = false;
+        this.setState({...this.state, showSearch: true});
+    }
+    private onCancel() {
+        if (!this.supressCancel) {
+            this.setState({showSearch: false, searchString: "", selected: 0, focusButton: true});
+        }
+    }
     private select(selected: Cy.NodeCollection | null) {
+        this.supressCancel = true;
         if (selected) {
-            if (this.reset) {
-                this.reset();
-            }
             this.setState({searchString: "", selected: 0, showSearch: false, focusButton: false});
             highlighted.select(selected);
         }
@@ -87,13 +94,11 @@ class SearchBox extends React.Component<{
     onEnter: () => void,
     onArrowUp: () => void,
     onArrowDown: () => void,
-    setReset: (reset: () => void) => void,
     onCancel: () => void,
 }, {value: string}> {
     constructor(props) {
         super(props);
         this.state = {value: ""};
-        props.setReset(() => this.reset());
     }
     public render() {
         return <div className="search-box">
@@ -107,11 +112,9 @@ class SearchBox extends React.Component<{
                 value={this.state.value}
                 placeholder="Search..."
                 autoFocus={true}
+                onBlur={this.props.onCancel}
             />
         </div>;
-    }
-    private reset() {
-        this.setState({value: ""}, () => this.props.onChanged(""));
     }
     private onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         function stop() {

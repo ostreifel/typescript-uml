@@ -127,7 +127,7 @@ function setMenuItems(filePath: string, cy: Cy.Core) {
                 {
                     label: "Find",
                     accelerator: "CommandOrControl+F",
-                    click: () => $(".search-box input").focus(),
+                    click: () => $(".search-container .search-graph button.toggle-search").click(),
                 },
                 {
                     label: "Undo",
