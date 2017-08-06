@@ -17,7 +17,7 @@ class GraphHighlights {
     public getSelectedId() {
         return this.targetId;
     }
-    public select(ele?: Cy.CollectionElements): void {
+    public select(ele?: Cy.NodeCollection | Cy.EdgeCollection): void {
         const args: ISelectAction = {
             startSelect: this.targetId,
             endSelect: ele ? ele.id() : "",
@@ -35,7 +35,7 @@ class GraphHighlights {
         this.cy = undefined;
     }
 }
-const highlighted = new GraphHighlights();
+export const highlighted = new GraphHighlights();
 
 export function registerInfoPane(
     cy: Cy.Core,
@@ -60,7 +60,7 @@ export function getInfoPaneState(): string {
  * @param supressToggle whether this was manually called by trigger
  */
 function onClick(e: Cy.EventObject) {
-    const target: Cy.CollectionElements = e.target;
+    const target: Cy.NodeCollection | Cy.EdgeCollection = e.target;
 
     if (
         target.id && highlighted.getSelectedId() !== target.id()
@@ -72,8 +72,8 @@ function onClick(e: Cy.EventObject) {
     return;
 }
 
-let curr: Cy.CollectionElements | null = null;
-function showInfo(target: Cy.CollectionElements) {
+let curr: Cy.NodeCollection | Cy.EdgeCollection | null = null;
+function showInfo(target: Cy.NodeCollection | Cy.EdgeCollection) {
     if (!curr || curr.id() !== target.id()) {
         if (curr) {
             curr.off("style");

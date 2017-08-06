@@ -29,6 +29,22 @@ body {
         width: 100%;
         background-color: black;
     }
+    .search-container .search-graph {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background-color: white;
+        max-height: 50vh;
+        .search-box .text-box {
+            margin: 0px;
+        }
+        .search-results .result-item {
+            &:hover, &.focus {
+                background-color: skyblue;
+                outline: 1px solid black;
+            }
+        }
+    }
     .element-info {
         position: absolute;
         bottom: 0px;

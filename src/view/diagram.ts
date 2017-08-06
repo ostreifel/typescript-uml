@@ -1,4 +1,3 @@
-
 import { remote } from "electron";
 import * as fs from "fs";
 import * as path from "path";
@@ -11,6 +10,7 @@ import {
     INodePositions,
     presetLayout,
 } from "./Layouts";
+import { registerSearchBox } from "./searchGraph";
 import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
 import { IHiddenNodes, toggleNodeAction } from "./undoRedo/ToggleNode";
@@ -168,6 +168,7 @@ function updateUI(
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
     resetUndoRedo(cy);
+    registerSearchBox(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     return cy;
 }
