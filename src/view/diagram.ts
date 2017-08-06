@@ -125,6 +125,11 @@ function setMenuItems(filePath: string, cy: Cy.Core) {
             label: "Edit",
             submenu: [
                 {
+                    label: "Find",
+                    accelerator: "CommandOrControl+F",
+                    click: () => $(".search-box input").focus(),
+                },
+                {
                     label: "Undo",
                     accelerator: "CommandOrControl+Z",
                     click: () => undo(),
@@ -170,6 +175,7 @@ function updateUI(
     resetUndoRedo(cy);
     registerSearchBox(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
+    $(".search-box input").focus();
     return cy;
 }
 function loadInitial(filePath: string) {

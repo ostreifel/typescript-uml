@@ -2,8 +2,8 @@ import { TextField } from "office-ui-fabric-react/lib/TextField";
 import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { getNodes } from "./getEles";
 import { highlighted } from "./elementInfo";
+import { getNodes } from "./getEles";
 
 export function registerSearchBox(cy: Cy.Core) {
     ReactDOM.render(<SearchGraph nodes={cy.nodes()} />, $(".search-container")[0]);
@@ -46,6 +46,7 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchS
             if (this.reset) {
                 this.reset();
             }
+            this.setState({searchString: "", selected: 0});
             highlighted.select(selected);
         }
     }
@@ -87,6 +88,7 @@ class SearchBox extends React.Component<{
                 }}
                 onKeyDown={(e) => this.onKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
                 value={this.state.value}
+                placeholder="Search..."
             />
         </div>;
     }
