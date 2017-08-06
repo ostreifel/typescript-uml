@@ -1,3 +1,4 @@
+import { IconButton } from "office-ui-fabric-react/lib/Button";
 import { TextField } from "office-ui-fabric-react/lib/TextField";
 import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
@@ -20,25 +21,40 @@ function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.NodeCol
     });
 }
 
-class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchString: string, selected: number}> {
+class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
+    showSearch: boolean,
+    searchString: string,
+    selected: number,
+    focusButton: boolean,
+}> {
     private reset?: () => void;
     constructor(props) {
         super(props);
-        this.state = {searchString: "", selected: 0};
+        this.state = {focusButton: true, searchString: "", selected: 0, showSearch: false};
     }
     public render() {
         const nodes = searchNodes(this.props.nodes, this.state.searchString);
         const nodeCount = nodes ? nodes.length : 0;
 
         return <div className="search-graph">
-            <SearchBox
-                onEnter={() => this.select(nodes && nodes[this.state.selected])}
-                onChanged={(searchString) => this.updateResults(searchString)}
-                onArrowDown={() => this.onArrowDown(nodeCount)}
-                onArrowUp={() => this.onArrowUp()}
-                setReset={(reset) => this.reset = reset}
-            />
-            <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />
+            {
+                this.state.showSearch ?
+                [<SearchBox
+                    onEnter={() => this.select(nodes && nodes[this.state.selected])}
+                    onChanged={(searchString) => this.updateResults(searchString)}
+                    onArrowDown={() => this.onArrowDown(nodeCount)}
+                    onArrowUp={() => this.onArrowUp()}
+                    setReset={(reset) => this.reset = reset}
+                    onCancel={() => this.setState({showSearch: false, searchString: "", selected: 0, focusButton: true})}
+                />,
+                <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />] :
+                <IconButton
+                    iconProps={{iconName: "Search"}}
+                    onClick={() => this.setState({...this.state, showSearch: true})}
+                    autoFocus={this.state.focusButton}
+                    className="toggle-search"
+                />
+            }
         </div>;
     }
     private select(selected: Cy.NodeCollection | null) {
@@ -46,7 +62,7 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchS
             if (this.reset) {
                 this.reset();
             }
-            this.setState({searchString: "", selected: 0});
+            this.setState({searchString: "", selected: 0, showSearch: false, focusButton: false});
             highlighted.select(selected);
         }
     }
@@ -71,7 +87,8 @@ class SearchBox extends React.Component<{
     onEnter: () => void,
     onArrowUp: () => void,
     onArrowDown: () => void,
-    setReset(reset: () => void),
+    setReset: (reset: () => void) => void,
+    onCancel: () => void,
 }, {value: string}> {
     constructor(props) {
         super(props);
@@ -89,6 +106,7 @@ class SearchBox extends React.Component<{
                 onKeyDown={(e) => this.onKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
                 value={this.state.value}
                 placeholder="Search..."
+                autoFocus={true}
             />
         </div>;
     }
@@ -108,6 +126,9 @@ class SearchBox extends React.Component<{
             stop();
         } else if (e.keyCode === KeyCodes.enter) {
             this.props.onEnter();
+            stop();
+        } else if (e.keyCode === KeyCodes.escape) {
+            this.props.onCancel();
             stop();
         }
     }

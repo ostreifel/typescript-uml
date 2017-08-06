@@ -35,6 +35,9 @@ body {
         right: 0px;
         background-color: white;
         max-height: 50vh;
+        button.toggle-search:focus {
+            border: 1px solid orange;
+        }
         .search-box .text-box {
             margin: 0px;
         }
