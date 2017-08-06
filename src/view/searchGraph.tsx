@@ -32,16 +32,16 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchS
 
         return <div className="search-graph">
             <SearchBox
-                onEnter={() => this.selectFirst(nodes && nodes[this.state.selected])}
+                onEnter={() => this.select(nodes && nodes[this.state.selected])}
                 onChanged={(searchString) => this.updateResults(searchString)}
                 onArrowDown={() => this.onArrowDown(nodeCount)}
                 onArrowUp={() => this.onArrowUp()}
                 setReset={(reset) => this.reset = reset}
             />
-            <SearchResults nodes={nodes} selected={this.state.selected} />
+            <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />
         </div>;
     }
-    private selectFirst(selected: Cy.NodeCollection | null) {
+    private select(selected: Cy.NodeCollection | null) {
         if (selected) {
             if (this.reset) {
                 this.reset();
@@ -111,19 +111,30 @@ class SearchBox extends React.Component<{
     }
 }
 
-class SearchResults extends React.Component<{nodes: Cy.NodeCollection | null, selected: number}, {}> {
+class SearchResults extends React.Component<{
+    nodes: Cy.NodeCollection | null,
+    selected: number,
+    onSelect: (e: Cy.NodeCollection) => void,
+}, {}> {
     public render() {
         return this.props.nodes ? <div className="search-results">
             {this.props.nodes.map((n, i) =>
-                <ResultItem node={n} selected={i === this.props.selected} />,
+                <ResultItem node={n} selected={i === this.props.selected} onSelect={this.props.onSelect} />,
             )}
         </div> : null;
     }
 }
 
-class ResultItem extends React.Component<{node: Cy.NodeCollection, selected: boolean}, {}> {
+class ResultItem extends React.Component<{
+    node: Cy.NodeCollection,
+    selected: boolean,
+    onSelect: (e: Cy.NodeCollection) => void,
+}, {}> {
     public render() {
-        return <div className={`result-item ${this.props.selected ? "focus" : ""}`}>
+        return <div
+            className={`result-item ${this.props.selected ? "focus" : ""}`}
+            onClick={() => this.props.onSelect(this.props.node)}
+        >
             {this.props.node.data("name")}
         </div>;
     }
