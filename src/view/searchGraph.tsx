@@ -21,6 +21,7 @@ function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.NodeCol
 }
 
 class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchString: string, selected: number}> {
+    private reset?: () => void;
     constructor(props) {
         super(props);
         this.state = {searchString: "", selected: 0};
@@ -35,12 +36,16 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {searchS
                 onChanged={(searchString) => this.updateResults(searchString)}
                 onArrowDown={() => this.onArrowDown(nodeCount)}
                 onArrowUp={() => this.onArrowUp()}
+                setReset={(reset) => this.reset = reset}
             />
             <SearchResults nodes={nodes} selected={this.state.selected} />
         </div>;
     }
     private selectFirst(selected: Cy.NodeCollection | null) {
         if (selected) {
+            if (this.reset) {
+                this.reset();
+            }
             highlighted.select(selected);
         }
     }
@@ -65,11 +70,28 @@ class SearchBox extends React.Component<{
     onEnter: () => void,
     onArrowUp: () => void,
     onArrowDown: () => void,
-}, {}> {
+    setReset(reset: () => void),
+}, {value: string}> {
+    constructor(props) {
+        super(props);
+        this.state = {value: ""};
+        props.setReset(() => this.reset());
+    }
     public render() {
         return <div className="search-box">
-            <TextField className="text-box" onChanged={this.props.onChanged} onKeyDown={(e) => this.onKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}/>
+            <TextField
+                className="text-box"
+                onChanged={(value) => {
+                    this.props.onChanged(value);
+                    this.setState({value});
+                }}
+                onKeyDown={(e) => this.onKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
+                value={this.state.value}
+            />
         </div>;
+    }
+    private reset() {
+        this.setState({value: ""}, () => this.props.onChanged(""));
     }
     private onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         function stop() {
