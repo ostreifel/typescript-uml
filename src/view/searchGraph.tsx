@@ -15,10 +15,16 @@ function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.NodeCol
         return null;
     }
     searchString = searchString.toLocaleLowerCase();
-    return getNodes(nodes, (n) => {
-        const name: string = n.data("name");
-        return name.toLocaleLowerCase().indexOf(searchString) >= 0;
+    function idx(n: Cy.NodeCollection) {
+        return n.data("name").toLocaleLowerCase().indexOf(searchString);
+    }
+    const foundNodes = getNodes(nodes, (n) => {
+        return idx(n) >= 0;
     });
+    const sortedNodes = foundNodes.sort((a, b) => {
+        return idx(a) - idx(b);
+    });
+    return sortedNodes;
 }
 
 class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
