@@ -39,9 +39,12 @@ body {
             margin: 0px;
         }
         .search-results .result-item {
-            &:hover, &.focus {
+            &.focus {
                 background-color: skyblue;
                 outline: 1px solid black;
+            }
+            &:hover {
+                background-color: skyblue;
             }
         }
     }
