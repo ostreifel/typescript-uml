@@ -30,7 +30,7 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
     private supressCancel: boolean;
     constructor(props) {
         super(props);
-        this.state = {focusButton: true, searchString: "", selected: 0, showSearch: false};
+        this.state = { focusButton: true, searchString: "", selected: 0, showSearch: false };
     }
     public render() {
         const nodes = searchNodes(this.props.nodes, this.state.searchString);
@@ -39,42 +39,42 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
         return <div className="search-graph">
             {
                 this.state.showSearch ?
-                [<SearchBox
-                    onEnter={() => this.select(nodes && nodes[this.state.selected])}
-                    onChanged={(searchString) => this.updateResults(searchString)}
-                    onArrowDown={() => this.onArrowDown(nodeCount)}
-                    onArrowUp={() => this.onArrowUp()}
-                    onCancel={() => this.onCancel()}
-                />,
-                <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />] :
-                <IconButton
-                    iconProps={{iconName: "Search"}}
-                    onClick={() => this.showSearch()}
-                    autoFocus={this.state.focusButton}
-                    className="toggle-search"
-                    title="Search (Ctr + F)"
-                />
+                    [<SearchBox
+                        onEnter={() => this.select(nodes && nodes[this.state.selected])}
+                        onChanged={(searchString) => this.updateResults(searchString)}
+                        onArrowDown={() => this.onArrowDown(nodeCount)}
+                        onArrowUp={() => this.onArrowUp()}
+                        onCancel={() => this.onCancel()}
+                    />,
+                    <SearchResults nodes={nodes} selected={this.state.selected} onSelect={(e) => this.select(e)} />] :
+                    <IconButton
+                        iconProps={{ iconName: "Search" }}
+                        onClick={() => this.showSearch()}
+                        autoFocus={this.state.focusButton}
+                        className="toggle-search"
+                        title="Search (Ctr + F)"
+                    />
             }
         </div>;
     }
     private showSearch() {
         this.supressCancel = false;
-        this.setState({...this.state, showSearch: true});
+        this.setState({ ...this.state, showSearch: true });
     }
     private onCancel() {
-        if (!this.supressCancel) {
-            this.setState({showSearch: false, searchString: "", selected: 0, focusButton: true});
+        if (!this.supressCancel && this.state.showSearch) {
+            this.setState({ showSearch: false, searchString: "", selected: 0, focusButton: true });
         }
     }
     private select(selected: Cy.NodeCollection | null) {
         this.supressCancel = true;
         if (selected) {
-            this.setState({searchString: "", selected: 0, showSearch: false, focusButton: false});
+            this.setState({ searchString: "", selected: 0, showSearch: false, focusButton: false });
             highlighted.select(selected);
         }
     }
     private updateResults(searchString: string) {
-        this.setState({searchString});
+        this.setState({ searchString });
     }
     private onArrowDown(nodeCount) {
         const selected = this.state.selected + 1;
@@ -84,7 +84,7 @@ class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
     }
     private onArrowUp() {
         if (this.state.selected > 0) {
-            this.setState({ ...this.state, selected: this.state.selected - 1});
+            this.setState({ ...this.state, selected: this.state.selected - 1 });
         }
     }
 }
@@ -95,10 +95,10 @@ class SearchBox extends React.Component<{
     onArrowUp: () => void,
     onArrowDown: () => void,
     onCancel: () => void,
-}, {value: string}> {
+}, { value: string }> {
     constructor(props) {
         super(props);
-        this.state = {value: ""};
+        this.state = { value: "" };
     }
     public render() {
         return <div className="search-box">
@@ -106,15 +106,18 @@ class SearchBox extends React.Component<{
                 className="text-box"
                 onChanged={(value) => {
                     this.props.onChanged(value);
-                    this.setState({value});
+                    this.setState({ value });
                 }}
                 onKeyDown={(e) => this.onKeyDown(e as React.KeyboardEvent<HTMLInputElement>)}
                 value={this.state.value}
                 placeholder="Search..."
                 autoFocus={true}
-                onBlur={this.props.onCancel}
+                onBlur={() => this.onBlur()}
             />
         </div>;
+    }
+    private onBlur() {
+        setTimeout(this.props.onCancel, 300);
     }
     private onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
         function stop() {
@@ -156,12 +159,30 @@ class ResultItem extends React.Component<{
     selected: boolean,
     onSelect: (e: Cy.NodeCollection) => void,
 }, {}> {
+    private resultItemRef: HTMLDivElement | null;
     public render() {
         return <div
             className={`result-item ${this.props.selected ? "focus" : ""}`}
             onClick={() => this.props.onSelect(this.props.node)}
+            ref={(ref) => {this.resultItemRef = ref; this.scrollIntoViewIfNecessary(); }}
         >
             {this.props.node.data("name")}
         </div>;
+    }
+    public componentDidUpdate() {
+        this.scrollIntoViewIfNecessary();
+    }
+    private scrollIntoViewIfNecessary() {
+        const curr = this.resultItemRef;
+        if (this.props.selected && curr && curr.parentElement) {
+            const parent = curr.parentElement;
+            const parentRect = parent.getBoundingClientRect();
+            const rect = curr.getBoundingClientRect();
+            if (rect.bottom > parentRect.bottom) {
+                parent.scrollTop += rect.bottom - parentRect.bottom;
+            } else if (rect.top < parentRect.top) {
+                parent.scrollTop += rect.top - parentRect.top;
+            }
+        }
     }
 }
