@@ -29,6 +29,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     private readonly languageService: ts.LanguageService;
     private inFunction: boolean = false;
     private inMethod: boolean = false;
+    private inConstructor: boolean = false;
 
     constructor(readonly sourceFile: ts.SourceFile) {
         super();
@@ -37,9 +38,10 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
     public visitConstructorDeclaration(node: ts.ConstructorDeclaration): void {
         this.storeNodeReferences(node);
-        this.inMethod = true;
+        const prev = this.inConstructor;
+        this.inConstructor = true;
         super.visitConstructorDeclaration(node);
-        this.inMethod = false;
+        this.inMethod = prev;
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {
@@ -111,13 +113,13 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     }
 
     public visitPropertyDeclaration(node: ts.PropertyDeclaration) {
-        if (!this.inMethod) {
+        if (!this.inMethod && !this.inConstructor) {
             this.storeNodeReferences(node);
         }
         super.visitPropertyDeclaration(node);
     }
     public visitPropertySignature(node: ts.PropertySignature) {
-        if (!this.inMethod) {
+        if (!this.inMethod && !this.inConstructor) {
             this.storeNodeReferences(node);
         }
         super.visitPropertySignature(node);
@@ -138,16 +140,30 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
     }
 
     public visitBindingElement(node: ts.BindingElement) {
-        if (!this.inFunction && !this.inMethod) {
+        if (!this.inFunction && !this.inMethod && !this.inConstructor) {
             this.storeNodeReferences(node);
         }
         super.visitBindingElement(node);
     }
 
+    public visitParameterDeclaration(node: ts.ParameterDeclaration): void {
+        const isPropertyParameter = Lint.hasModifier(
+            node.modifiers,
+            ts.SyntaxKind.PublicKeyword,
+            ts.SyntaxKind.PrivateKeyword,
+            ts.SyntaxKind.ProtectedKeyword,
+            ts.SyntaxKind.ReadonlyKeyword,
+        );
+        if (this.inConstructor && isPropertyParameter) {
+            this.storeNodeReferences(node);
+        }
+        super.visitParameterDeclaration(node);
+    }
+
     public visitVariableDeclaration(node: ts.VariableDeclaration) {
         const isSingleVariable = node.name.kind === ts.SyntaxKind.Identifier;
 
-        if (isSingleVariable && !this.inFunction && !this.inMethod) {
+        if (isSingleVariable && !this.inFunction && !this.inMethod && !this.inConstructor) {
             this.storeNodeReferences(node);
         }
 
@@ -166,7 +182,6 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
 
         const fileName = this.sourceFile.fileName;
         const symbol: ts.Symbol = node["symbol"];
-        // this.languageService.getDocumentHighlights(fileName, position, [fileName]);
         const references = this.languageService.findReferences(fileName, position);
         if (symbol) {
             this.graphNodes.push({

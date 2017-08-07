@@ -89,4 +89,11 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const idents = walker.graphNodes.map((n) => n.symbol.getName());
         assert.deepEqual(["global1", "func1"], idents);
     });
+    test("constructor properties", function(this: ITestCallbackContext) {
+        const { sourceFile } = compile("constructorProperties.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
+        walker.walk(sourceFile);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
+        assert.deepEqual(["Class1", "__constructor", "priv", "ro", "pub", "prot"], idents);
+    });
 });
