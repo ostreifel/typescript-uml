@@ -64,11 +64,11 @@ suite("layout tests", function(this: ISuiteCallbackContext) {
         const grid = getGrid(nodes);
         assert.deepEqual(
             [
-                ["1", "2", "3"],
-                ["4", "5", "6"],
-                ["7", "8", "9"],
+                ["1", "2", "3", ""],
+                ["4", "5", "6", ""],
+                ["7", "8", "9", ""],
                 ["a", "b", "d", "e"],
-                ["c",  "" , "f"],
+                ["c",  "" , "f", ""],
             ],
             grid,
         );
