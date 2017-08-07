@@ -1,65 +1,59 @@
-# typescript-uml README
+# Typescript UML
 
-This is the README for your extension "typescript-uml". After writing up a brief description, we recommend including the following sections.
+Generate diagrams of your typescript and javascript files.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Open a diagram  
+Open the file to diagram and press alt+shift+t to open a new diagram window. 
 
-For example if there is an image subfolder under your extension project workspace:
+### Rearrange the nodes
+Click and drag nodes to move them.
 
-\!\[feature X\]\(images/feature-x.png\)
+### View Details on specific node
+Click a node or edge to see more details about it
+TODO gif here
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+### Hide nodes
+Click the node's name to toggle its visibility in the graph.  
+TODO gif here
 
-## Requirements
+### Go to the declaration of the node in the code file
+TODO picture here
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### Undo/Redo changes to the graph
+Standard hotkeys ctr+z ctr+y will reverse or replay: node moves, node selections, node hide/show and resets of the node layout.
+TODO gif here
 
-## Extension Settings
+### Save/open diagrams
+Ctr+S/Ctr+O to save the diagram to disk. Included in the save file are 
+- the current nodes and edges
+- positions of the nodes
+- current node/edge selected
+- visibilities of the nodes
+- path to the file compiled
+- the undo/redo stacks
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+TODO picture here
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+### Search for a node
+Hit Ctr+f and start typing to search for a node by name. Enter button/click the node to select. If the node is not in the viewport the diagram will be pan that node into view.  
+TODO gif here
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- Layout of nodes does not take into account the references to and from them.
+- If there a lot of nodes with the same name they should have some disambiguation especially when searching or listed as references to/from a node
+- Returning a expression does not diagram the components of the returned type. example:
+```javascript
+// looks large even though it could be decomposed
+function problemFunction() {
+    // This return type does not have a name. What would it's node be called? Should each property be a "variable" of problemFunction?
+    return {
+        a: function () {/* lots of code */}
+        b: function () {/* lots of code */}
+        c: function () {/* lots of code */}
+    }
+}
+```
+- Hiding all children of a node hides it as well.
