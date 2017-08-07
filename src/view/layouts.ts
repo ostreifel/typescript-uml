@@ -64,6 +64,16 @@ export interface INodeHierarchy {
     directIds: string[];
     groups: INodeHierarchy[];
 }
+
+/**
+ *  Grid but for compound graphs -
+ *  Grid each of the children of a parent
+ *  Put each grid together in a minimal grid
+ *
+ * In the future a layout that considers the references
+ * while creating the layout would be preferable to use
+ * but more complex to write and test.
+ */
 export class BoxGridLayout {
     constructor(
         private readonly eles: Cy.NodeCollection,
@@ -78,7 +88,7 @@ export class BoxGridLayout {
         return {
             name: "grid",
             // tslint:disable-next-line:no-any
-            position: position as any, // typing here is wrong
+            position: position as any, // typing here is wrong - cast
             condense: true,
             avoidOverlapPadding: padding,
             fit: true,
