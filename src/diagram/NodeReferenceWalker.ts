@@ -50,6 +50,16 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.inFunction = prev;
     }
 
+    public visitFunctionExpression(node: ts.FunctionExpression): void {
+        if (node.name) {
+            this.storeNodeReferences(node);
+        }
+        const prev = this.inFunction;
+        this.inFunction = true;
+        super.visitFunctionExpression(node);
+        this.inFunction = prev;
+    }
+
     public visitImportDeclaration(node: ts.ImportDeclaration) {
         if (!Lint.hasModifier(node.modifiers, ts.SyntaxKind.ExportKeyword)) {
             const importClause = node.importClause;
