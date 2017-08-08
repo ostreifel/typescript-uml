@@ -10,7 +10,7 @@ import {
     INodePositions,
     presetLayout,
 } from "./Layouts";
-import { registerSearchBox } from "./searchGraph";
+import { registerSearchBox } from "./searchControl";
 import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
 import { IHiddenNodes, toggleNodeAction } from "./undoRedo/ToggleNode";

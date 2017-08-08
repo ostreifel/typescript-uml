@@ -40,11 +40,13 @@ body {
         }
         .search-box .text-box {
             margin: 0px;
+            width: 400px;
         }
         .search-results {
             max-height: calc(50vh - 32px);
             overflow-y: auto;
             .result-item {
+                padding: 0 3px;
                 cursor: pointer;
                 &.focus {
                     background-color: skyblue;

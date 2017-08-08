@@ -4,31 +4,10 @@ import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { highlighted } from "./elementInfo";
-import { getNodes } from "./getEles";
+import { searchNodes } from "./search";
 
 export function registerSearchBox(cy: Cy.Core) {
     ReactDOM.render(<SearchGraph nodes={cy.nodes()} />, $(".search-container")[0]);
-}
-
-function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.NodeCollection | null {
-    if (!searchString) {
-        return null;
-    }
-    searchString = searchString.toLocaleLowerCase();
-    function idx(n: Cy.NodeCollection) {
-        return n.data("name").toLocaleLowerCase().indexOf(searchString);
-    }
-    const foundNodes = getNodes(nodes, (n) => {
-        return idx(n) >= 0;
-    });
-    const sortedNodes = foundNodes.sort((a, b) => {
-        const idxComp = idx(a) - idx(b);
-        if (idxComp !== 0) {
-            return idxComp;
-        }
-        return a.length - b.length;
-    });
-    return sortedNodes;
 }
 
 class SearchGraph extends React.Component<{ nodes: Cy.NodeCollection }, {
