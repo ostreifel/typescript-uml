@@ -16,7 +16,7 @@ export function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.
         if (idxComp !== 0) {
             return idxComp;
         }
-        return b.length - a.length;
+        return a.data("name").length - b.data("name").length;
     });
     return sortedNodes;
 }

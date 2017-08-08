@@ -3,14 +3,14 @@ export function getNodes(
     filter: (n: Cy.NodeCollection) => boolean,
 ) {
     // tslint:disable-next-line:no-any
-    return eles.nodes(filter as any);
+    return eles.filter(filter as any);
 }
 export function getEdges(
     eles: Cy.EdgeCollection,
     filter: (n: Cy.EdgeCollection) => boolean,
 ) {
     // tslint:disable-next-line:no-any
-    return eles.edges(filter as any);
+    return eles.filter(filter as any);
 }
 export function getEles(
     eles: Cy.CollectionElements,
