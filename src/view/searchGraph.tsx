@@ -22,7 +22,11 @@ function searchNodes(nodes: Cy.NodeCollection, searchString: string): Cy.NodeCol
         return idx(n) >= 0;
     });
     const sortedNodes = foundNodes.sort((a, b) => {
-        return idx(a) - idx(b);
+        const idxComp = idx(a) - idx(b);
+        if (idxComp !== 0) {
+            return idxComp;
+        }
+        return a.length - b.length;
     });
     return sortedNodes;
 }
