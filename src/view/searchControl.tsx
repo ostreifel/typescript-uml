@@ -143,11 +143,12 @@ class SearchResults extends React.Component<{
     }
 }
 
-class ResultItem extends React.Component<{
-    node: Cy.NodeCollection,
-    selected: boolean,
-    onSelect: (e: Cy.NodeCollection) => void,
-}, {}> {
+interface IResultItemProps {
+    node: Cy.NodeCollection;
+    selected: boolean;
+    onSelect: (e: Cy.NodeCollection) => void;
+}
+class ResultItem extends React.Component<IResultItemProps, {}> {
     private resultItemRef: HTMLDivElement | null;
     public render() {
         return <div
@@ -158,6 +159,7 @@ class ResultItem extends React.Component<{
             {this.props.node.data("name")}
         </div>;
     }
+
     public componentDidUpdate() {
         this.scrollIntoViewIfNecessary();
     }

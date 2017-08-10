@@ -41,7 +41,7 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         const prev = this.inConstructor;
         this.inConstructor = true;
         super.visitConstructorDeclaration(node);
-        this.inMethod = prev;
+        this.inConstructor = prev;
     }
 
     public visitFunctionDeclaration(node: ts.FunctionDeclaration) {

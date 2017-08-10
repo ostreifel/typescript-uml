@@ -22,7 +22,8 @@
         "max-classes-per-file": [
             false
         ],
-        "no-any": true
+        "no-any": true,
+        "no-string-throw": true
     },
     "rulesDirectory": []
 }
