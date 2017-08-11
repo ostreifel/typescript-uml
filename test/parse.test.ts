@@ -95,11 +95,12 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
         const idents = walker.graphNodes.map((n) => n.symbol.getName());
         assert.deepEqual(["A", "__constructor", "B", "b1"], idents);
     });
-    test("double var", function(this: ITestCallbackContext) {
-        const filePath = toFilePath("doubleVar.ts");
-        const diagram = computeDiagramForFile(filePath, () => undefined);
-        const nodes = diagram.filter((e) => (e as IDiagramNode).data.name) as IDiagramNode[];
-        const [id1, id2] = nodes.map((e) => e.data.id);
-        assert.notEqual(id1, id2);
+    test("arrow expression", function(this: ITestCallbackContext) {
+        const { sourceFile } = compile("arrowExpression.ts");
+        const walker = new NodeReferenceWalker(sourceFile);
+        walker.walk(sourceFile);
+        const idents = walker.graphNodes.map((n) => n.symbol.getName());
+        // Don't pick up the locals of function expressions
+        assert.deepEqual(["a"], idents);
     });
 });

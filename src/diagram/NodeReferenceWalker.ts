@@ -129,6 +129,12 @@ export class NodeReferenceWalker extends Lint.SyntaxWalker {
         this.storeNodeReferences(node);
         super.visitMethodSignature(node);
     }
+    public visitArrowFunction(node: ts.ArrowFunction): void {
+        const prev = this.inFunction;
+        this.inFunction = true;
+        super.visitArrowFunction(node);
+        this.inFunction = prev;
+    }
 
     public visitClassDeclaration(node: ts.ClassDeclaration): void {
         this.storeNodeReferences(node);
