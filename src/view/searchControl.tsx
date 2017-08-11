@@ -160,6 +160,13 @@ class ResultItem extends React.Component<IResultItemProps, {}> {
         </div>;
     }
 
+    public shouldComponentUpdate(
+        nextProps: Readonly<IResultItemProps>,
+    ): boolean {
+        return this.props.selected !== nextProps.selected ||
+            this.props.node.id() !== nextProps.node.id();
+    }
+
     public componentDidUpdate() {
         this.scrollIntoViewIfNecessary();
     }
