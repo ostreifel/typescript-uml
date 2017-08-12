@@ -10,6 +10,7 @@ import {
     INodePositions,
     presetLayout,
 } from "./Layouts";
+import { panControls } from "./panControls";
 import { registerSearchBox } from "./searchControl";
 import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
@@ -174,6 +175,7 @@ function updateUI(
     registerInfoPane(cy, infoPanelState);
     resetUndoRedo(cy);
     registerSearchBox(cy);
+    panControls.register(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     $(".search-box input").focus();
     return cy;

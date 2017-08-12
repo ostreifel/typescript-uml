@@ -1,5 +1,58 @@
+$pan-color: white;
 body {
     margin: 0px;
+    .mouse-pan {
+        position: absolute;
+        min-width: 32px;
+        min-height: 32px;
+        opacity: 0;
+        background-color: green;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        &:hover {
+            opacity: 1;
+        }
+        &.top {
+            right: 0;
+            left: 0;
+            top: 0; 
+            background: linear-gradient(to top, transparent, $pan-color);
+        }
+        &.right {
+            top: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(to right, transparent, $pan-color);
+        }
+        &.bottom {
+            right: 0;
+            left: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent, $pan-color);
+        }
+        &.left {
+            top: 0;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(to left, transparent, $pan-color);
+        }
+        &.top-left {
+            top: 0;
+            left: 0;
+            background: linear-gradient(to top left, transparent, $pan-color);
+        }
+        &.bottom-right {
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(to bottom right, transparent, $pan-color);
+        }
+        &.bottom-left {
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(to bottom left, transparent, $pan-color);
+        }
+    }
     .filter-container .filter {
         position: absolute;
         top: 0px;
