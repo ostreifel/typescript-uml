@@ -2,15 +2,17 @@
 import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 
 class PanControls {
-    private static readonly MOVE_DISTANCE = 1;
-    private static readonly MOVE_INTERVAL = 3;
+    /** Pixels/ms */
+    private static readonly MOVE_RATE = 1;
+    /** Maximum frame refresh when panning */
+    private static readonly MOVE_INTERVAL = 1;
     private cy?: Cy.Core;
     constructor() {
         // register html elements here;
         this.registerControl(
             {
                 x: 0,
-                y: PanControls.MOVE_DISTANCE,
+                y: PanControls.MOVE_RATE,
             },
             $(".mouse-pan.top"),
             KeyCodes.up,
@@ -18,14 +20,14 @@ class PanControls {
         this.registerControl(
             {
                 x: 0,
-                y: -PanControls.MOVE_DISTANCE,
+                y: -PanControls.MOVE_RATE,
             },
             $(".mouse-pan.bottom"),
             KeyCodes.down,
         );
         this.registerControl(
             {
-                x: -PanControls.MOVE_DISTANCE,
+                x: -PanControls.MOVE_RATE,
                 y: 0,
             },
             $(".mouse-pan.right"),
@@ -33,7 +35,7 @@ class PanControls {
         );
         this.registerControl(
             {
-                x: PanControls.MOVE_DISTANCE,
+                x: PanControls.MOVE_RATE,
                 y: 0,
             },
             $(".mouse-pan.left"),
@@ -42,22 +44,22 @@ class PanControls {
 
         this.registerControl(
             {
-                x: PanControls.MOVE_DISTANCE,
-                y: PanControls.MOVE_DISTANCE,
+                x: PanControls.MOVE_RATE,
+                y: PanControls.MOVE_RATE,
             },
             $(".mouse-pan.top-left"),
         );
         this.registerControl(
             {
-                x: -PanControls.MOVE_DISTANCE,
-                y: -PanControls.MOVE_DISTANCE,
+                x: -PanControls.MOVE_RATE,
+                y: -PanControls.MOVE_RATE,
             },
             $(".mouse-pan.bottom-right"),
         );
         this.registerControl(
             {
-                x: PanControls.MOVE_DISTANCE,
-                y: -PanControls.MOVE_DISTANCE,
+                x: PanControls.MOVE_RATE,
+                y: -PanControls.MOVE_RATE,
             },
             $(".mouse-pan.bottom-left"),
         );
@@ -65,19 +67,30 @@ class PanControls {
     public register(cy: Cy.Core) {
         this.cy = cy;
     }
-    private registerControl(increment: Cy.Position, mouseElement: JQuery, keyCode?: number) {
-        let mouseTimer: NodeJS.Timer;
+    private registerControl({x: xRate, y: yRate}: Cy.Position, mouseElement: JQuery, keyCode?: number) {
+        let lastMove = 0;
         const pan = () => {
             if (this.cy) {
-                this.cy.panBy(increment);
+                const now = Date.now();
+                const msElapsed = lastMove ? now - lastMove : 1;
+                lastMove = now;
+                const delta: Cy.Position = {
+                    x: xRate * msElapsed,
+                    y: yRate * msElapsed,
+                };
+                this.cy.panBy(delta);
             }
         };
+
+        let mouseTimer: NodeJS.Timer | null;
         mouseElement.mouseenter(() => {
             mouseTimer = setInterval(pan, PanControls.MOVE_INTERVAL);
         });
         mouseElement.mouseleave(() => {
             if (mouseTimer) {
                 clearInterval(mouseTimer);
+                mouseTimer = null;
+                lastMove = 0;
             }
         });
         if (keyCode) {
@@ -98,6 +111,7 @@ class PanControls {
                 ) {
                     clearInterval(keyTimer);
                     keyTimer = null;
+                    lastMove = 0;
                 }
             });
         }
