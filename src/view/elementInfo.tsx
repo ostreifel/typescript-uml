@@ -1,4 +1,5 @@
 import { spawn } from "child_process";
+import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
@@ -102,6 +103,16 @@ function hideInfo() {
         curr = null;
     }
 }
+
+function onElementKeydown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (
+        !e.ctrlKey && !e.altKey && !e.shiftKey &&
+        e.keyCode === KeyCodes.escape
+    ) {
+        highlighted.select(undefined);
+    }
+
+}
 function showEdge(edge: Cy.EdgeCollection) {
     ReactDom.render(<EdgeInfo edge={edge} />, infoElement);
 }
@@ -128,7 +139,7 @@ class EdgeInfo extends React.Component<{ edge: Cy.EdgeCollection }, {}> {
         const { edge } = this.props;
         const getData = edge.data.bind(edge);
         const references: IDiagramFilePosition[] = getData("references");
-        return <div className="edge">
+        return <div className="edge" onKeyDown={onElementKeydown}>
             <div>
                 <NodeLink node={edge.source()} />
                 {" to "}
@@ -172,7 +183,7 @@ class NodeInfo extends React.Component<{ node: Cy.NodeCollection }, {}> {
         const getData = node.data.bind(node);
         const inEdges = node.incomers().edges("");
         const outEdges = node.outgoers().edges("");
-        return <div className="node">
+        return <div className="node" onKeyDown={onElementKeydown}>
             <button className={`name ${node.hasClass("hidden") ? "hidden" : ""}`}
                 role="heading"
                 title={getData("id")}
