@@ -1,4 +1,5 @@
 
+import { IDiagramElement } from "../diagram/DiagramModel";
 import { getNodes } from "./getEles";
 
 export function coseLayout(): Cy.CoseLayoutOptions {
@@ -30,8 +31,13 @@ export function circleLayout(): Cy.CircleLayoutOptions {
     } as Cy.CircleLayoutOptions;
     return layout;
 }
-export function boxGridLayout(eles: Cy.NodeCollection): Cy.GridLayoutOptions {
-    const boxLayout = new BoxGridLayout(eles);
+export function boxGridLayout(eles: IDiagramElement[]): Cy.GridLayoutOptions {
+    const cy = cytoscape({
+        headless: true,
+        elements: eles,
+    });
+    const nodes = cy.nodes();
+    const boxLayout = new BoxGridLayout(nodes);
     const layout = boxLayout.getLayout();
     return layout;
 }
@@ -76,13 +82,13 @@ export interface INodeHierarchy {
  */
 export class BoxGridLayout {
     constructor(
-        private readonly eles: Cy.NodeCollection,
+        private readonly nodes: Cy.NodeCollection,
     ) { }
 
     public getLayout(): Cy.GridLayoutOptions {
-        const maxWidth = this.eles.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
+        const maxWidth = this.nodes.nodes(":childless").max((ele) => ele.data("nodeSize")).value;
         const padding = Math.max(0, 200 - maxWidth);
-        const hierarchy = this.getHierarchy(this.eles);
+        const hierarchy = this.getHierarchy(this.nodes);
         const positions = this.calcPositions(hierarchy);
         const position = (n: Cy.NodeSingular) => positions[n.id()];
         return {

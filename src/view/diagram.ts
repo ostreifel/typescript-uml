@@ -7,6 +7,7 @@ import { hovers } from "./hover";
 import {
     applyLayout,
     boxGridLayout,
+    BoxGridLayout,
     getPositions,
     INodePositions,
     presetLayout,
@@ -81,8 +82,8 @@ function loadGraph() {
             console.log(err);
             const dataStr = buffer.toString("utf-8");
             const data: ISaveData = JSON.parse(dataStr);
-            const cy = updateUI(data);
-            applyLayout(cy.nodes(), presetLayout(data.positions));
+            const layout = presetLayout(data.positions);
+            const cy = updateUI(data, layout);
             toggleNodeAction.restoreHiddenNodes(data.hiddenNodes);
             resetUndoRedo(cy, data.undoRedoStacks);
         });
@@ -154,7 +155,7 @@ function updateWindowTitle(status: string) {
 function applyDefaultLayout(cy: Cy.Core) {
     const currentTitle = remote.getCurrentWindow().getTitle();
     updateWindowTitle("Computing layout...");
-    applyLayout(cy.nodes(), boxGridLayout(cy.nodes()));
+    applyLayout(cy.nodes(), new BoxGridLayout(cy.nodes()).getLayout());
     updateWindowTitle(currentTitle);
 }
 function updateUI(
@@ -163,6 +164,7 @@ function updateUI(
         infoPanelState,
         elements,
     }: ISaveData,
+    layout: Cy.LayoutOptions,
 ): Cy.Core {
     updateWindowTitle("Drawing graph...");
     const cy = cytoscape({
@@ -171,7 +173,7 @@ function updateUI(
         selectionType: "additive",
         // tslint:disable-next-line:no-any
         style: getCyStyle() as any,
-        layout: { name: "null" } as Cy.NullLayoutOptions,
+        layout,
     });
     setMenuItems(filePath, cy);
     registerInfoPane(cy, infoPanelState);
@@ -186,12 +188,14 @@ function updateUI(
 }
 function loadInitial(filePath: string) {
     const elements: Cy.ElementDefinition[] = computeDiagramForFile(filePath, updateWindowTitle);
-    const cy = updateUI({
-        elements,
-        filePath,
-        infoPanelState: "",
-    } as ISaveData);
-    applyDefaultLayout(cy);
+    const cy = updateUI(
+        {
+            elements,
+            filePath,
+            infoPanelState: "",
+        } as ISaveData,
+        boxGridLayout(elements),
+    );
     resetUndoRedo(cy);
 }
 
