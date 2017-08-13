@@ -103,8 +103,7 @@ class PanControls {
                 ) {
                     keyTimer = setInterval(pan, PanControls.MOVE_INTERVAL);
                 }
-            });
-            $("body").keyup((e) => {
+            }).keyup((e) => {
                 if (
                     keyTimer &&
                     !e.altKey && !e.shiftKey && !e.ctrlKey && e.keyCode === keyCode

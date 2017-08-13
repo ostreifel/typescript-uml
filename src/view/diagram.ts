@@ -16,6 +16,7 @@ import { getCyStyle } from "./style";
 import { resetUndoRedo } from "./undoRedo/registerUndoRedo";
 import { IHiddenNodes, toggleNodeAction } from "./undoRedo/ToggleNode";
 import { getUndoRedoStacks, IUndoRedoStacks, redo, undo } from "./undoRedo/undoRedo";
+import { zoomControls } from "./zoomControls";
 
 const fileExtension = "tsgraph.json";
 const fileFilters: Electron.FileFilter[] = [{
@@ -176,6 +177,7 @@ function updateUI(
     resetUndoRedo(cy);
     registerSearchBox(cy);
     panControls.register(cy);
+    zoomControls.registerCy(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     $(".search-box input").focus();
     return cy;
