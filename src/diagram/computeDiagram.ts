@@ -5,7 +5,6 @@ import { getSymbolProperties } from "./symbolProperties";
 
 interface IReferencesContext {
     sourceFile: ts.SourceFile;
-    typechecker: ts.TypeChecker;
     references: {[fromTo: string]: IDiagramEdge};
     nodes: {[id: string]: IDiagramNode};
 }
@@ -14,11 +13,10 @@ function getFileContext(fileName: string): IReferencesContext {
     const program = ts.createProgram([fileName], {
         allowJs: true,
     });
+    program.getTypeChecker();
     const sourceFile = program.getSourceFile(fileName);
-    const typechecker = program.getTypeChecker();
     return {
         sourceFile,
-        typechecker,
         references: {},
         nodes: {},
     };

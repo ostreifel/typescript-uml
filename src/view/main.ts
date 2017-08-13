@@ -21,6 +21,7 @@ function createWindow() {
     mainWindow.maximize();
     mainWindow.setMenu(electron.Menu.buildFromTemplate([
         { role: "toggledevtools" },
+        { role: "reload" },
     ]));
 
     // and load the index.html of the app.
