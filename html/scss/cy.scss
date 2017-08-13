@@ -2,9 +2,6 @@
 Note that this similar to but not actually css.
 See http://js.cytoscape.org/#style
 */
-.faded {
-    opacity: .5;
-}
 node {
     shape: ellipse;
     content: data(name);
@@ -23,11 +20,6 @@ node {
         border-opacity: 1;
         border-width: 5;
         border-style: solid;
-    }
-    .hover {
-        color: black;
-        text-outline-color: white;
-        border-color: #B7B7B7;
     }
     &.hidden, &.hidden-type {
         display: none;
@@ -81,9 +73,6 @@ edge {
     target-arrow-color: white;
     target-arrow-shape: triangle;
     width: data(weight);
-    &.hover {
-        line-style: dashed;
-    }
     &:selected {
         // dark yellow
         line-color: #c4c400;
@@ -104,4 +93,14 @@ edge {
         target-arrow-color: red;
         width: data(selectedWeight);
     }
+}
+.faded {
+    opacity: .5;
+}
+.hover {
+    color: black;
+    text-outline-color: white;
+    border-color: #B7B7B7;
+
+    line-style: dashed;
 }
