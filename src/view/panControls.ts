@@ -82,16 +82,16 @@ class PanControls {
             }
         };
 
-        let mouseTimer: NodeJS.Timer | null;
+        // let mouseTimer: NodeJS.Timer | null;
         mouseElement.mouseenter(() => {
-            mouseTimer = setInterval(pan, PanControls.MOVE_INTERVAL);
+            // mouseTimer = setInterval(pan, PanControls.MOVE_INTERVAL);
         });
         mouseElement.mouseleave(() => {
-            if (mouseTimer) {
-                clearInterval(mouseTimer);
-                mouseTimer = null;
-                lastMove = 0;
-            }
+            // if (mouseTimer) {
+            //     clearInterval(mouseTimer);
+            //     mouseTimer = null;
+            //     lastMove = 0;
+            // }
         });
         if (keyCode) {
             let keyTimer: NodeJS.Timer | null;
