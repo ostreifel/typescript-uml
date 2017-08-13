@@ -43,6 +43,7 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         ele.selectify();
         ele.select();
         ele.unselectify();
+        this.fadeUnrelated(ele);
         this.onSelect(ele);
     }
     private panIfNecessary(ele: Cy.NodeCollection) {
@@ -73,6 +74,36 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         node.incomers().edges("").addClass("incoming");
         node.outgoers().edges("").addClass("outgoing");
     }
+    private fadeUnrelated(ele: Cy.CollectionElements) {
+        if (!this.cy) {
+            return;
+        }
+        const ids: string[] = [];
+        if (ele.isNode()) {
+            const node = ele as Cy.NodeCollection;
+            node.incomers().map((e) => ids.push(...[e.id(), ...this.getParents(e)]));
+            node.outgoers().map((e) => ids.push(...[e.id(), ...this.getParents(e)]));
+            ids.push(...[ele.id(), ...this.getParents(ele)]);
+        } else if (ele.isEdge()) {
+            const edge = ele as Cy.EdgeCollection;
+            ids.push(edge.id());
+            const source = edge.source();
+            const target = edge.target();
+            ids.push(...[source.id(), ...this.getParents(source)]);
+            ids.push(...[target.id(), ...this.getParents(target)]);
+        }
+        const idSet: {[id: string]: undefined} = {};
+        for (const id of ids) {
+            idSet[id] = undefined;
+        }
+        getEles(this.cy.elements(), (e) => !(e.id() in idSet)).addClass("faded");
+    }
+    private getParents(node?: Cy.NodeCollection): string[] {
+        if (!node || !node.parent() || !node.isNode()) {
+            return [];
+        }
+        return [node.parent().id(), ...this.getParents(node.parent())];
+    }
     private unselect(id: string): void {
         if (!id || !this.cy) {
             return;
@@ -88,6 +119,7 @@ export class SelectAction extends UndoRedoAction<ISelectAction> {
         ele.unselect();
         ele.unselectify();
         this.onUnselect(ele);
+        this.cy.elements().removeClass("faded");
     }
     private removeNodeEdgeHighlights(node: Cy.NodeCollection) {
         node.incomers().edges("").removeClass("incoming");

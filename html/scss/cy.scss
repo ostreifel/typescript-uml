@@ -2,6 +2,9 @@
 Note that this similar to but not actually css.
 See http://js.cytoscape.org/#style
 */
+.faded {
+    opacity: .5;
+}
 node {
     shape: ellipse;
     content: data(name);
