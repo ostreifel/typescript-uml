@@ -53,30 +53,6 @@ body {
             background: linear-gradient(to bottom left, transparent, $pan-color);
         }
     }
-    .filter-container .filter {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        padding: 10px;
-        .options {
-            &.hidden {
-                display: none;
-            }
-            padding: 10px;
-            background-color: white;
-            .option.ms-Toggle {
-                display: flex;
-                flex-direction: row-reverse;
-                justify-content: flex-end;
-                label {
-                    margin-left: 5px;
-                }
-                button:focus {
-                    outline: 1px solid black;
-                }
-            }
-        }
-    }
     #cy {
         height: 100%;
         width: 100%;
@@ -116,7 +92,7 @@ body {
         bottom: 0px;
         right: 0px;
         max-height: 50vh;
-        max-width: 300px;
+        max-width: 600px;
         overflow: auto;
         background-color: white;
         > * {

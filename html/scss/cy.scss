@@ -3,11 +3,11 @@ Note that this similar to but not actually css.
 See http://js.cytoscape.org/#style
 */
 node {
-    color: white;
     shape: ellipse;
     content: data(name);
     height: data(nodeSize);
     width: data(nodeSize);
+    color: white;
     text-outline-color: black;
     text-outline-width: 2;
     text-valign: center;
@@ -15,6 +15,23 @@ node {
     border-opacity: 1;
     border-width: 3;
     border-style: solid;
+    &:selected {
+        border-color: white;
+        border-opacity: 1;
+        border-width: 5;
+        border-style: solid;
+    }
+    .hover {
+        color: black;
+        text-outline-color: white;
+        border-color: #B7B7B7;
+    }
+    &.hidden, &.hidden-type {
+        display: none;
+    }
+    &:parent {
+        text-valign: top;
+    }
     &[type='class'], &[type='enum'], &[type='enum'], &[type='interface'], &[type='module'], &[type='type alias'] {
         shape: rectangle;
     }
@@ -54,18 +71,6 @@ node {
     &[type='module'] {
         background-color: green;
     }
-    &:parent {
-        text-valign: top;
-    }
-    &:selected {
-        border-color: white;
-        border-opacity: 1;
-        border-width: 5;
-        border-style: solid;
-    }
-    &.hidden, &.hidden-type {
-        display: none;
-    }
 }
 edge {
     curve-style: bezier;
@@ -73,6 +78,9 @@ edge {
     target-arrow-color: white;
     target-arrow-shape: triangle;
     width: data(weight);
+    &.hover {
+        line-style: dashed;
+    }
     &:selected {
         // dark yellow
         line-color: #c4c400;

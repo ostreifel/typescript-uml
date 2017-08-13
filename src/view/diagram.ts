@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { computeDiagramForFile } from "../diagram/computeDiagram";
 import { getInfoPaneState, registerInfoPane } from "./elementInfo";
+import { hovers } from "./hover";
 import {
     applyLayout,
     boxGridLayout,
@@ -178,6 +179,7 @@ function updateUI(
     registerSearchBox(cy);
     panControls.register(cy);
     zoomControls.registerCy(cy);
+    hovers.registerCy(cy);
     updateWindowTitle(`${path.basename(filePath)} UML`);
     $(".search-box input").focus();
     return cy;
