@@ -40,6 +40,7 @@
     "test": "node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
+    "@types/applicationinsights-js": "^1.0.4",
     "@types/jquery": "^3.2.9",
     "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.40",

@@ -199,4 +199,14 @@ function loadInitial(filePath: string) {
     resetUndoRedo(cy);
 }
 
-loadInitial(remote.getGlobal("diagramArgs")[3]);
+const fileArg = remote.getGlobal("diagramArgs")[3];
+loadInitial(fileArg);
+const type = path.extname(fileArg);
+
+const insights: Microsoft.ApplicationInsights.IAppInsights = window["appInsights"];
+if (insights) {
+    insights.trackPageView("diagram", "", {
+        fileType: type,
+    });
+    insights.flush();
+}
