@@ -2,7 +2,7 @@
   "name": "typescript-uml",
   "displayName": "Typescript UML",
   "description": "Create uml diagrams of typescript files",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "ottostreifel",
   "engines": {
     "vscode": "^1.14.0"
@@ -32,6 +32,13 @@
       }
     ]
   },
+  "keywords": [
+    "typescript",
+    "uml",
+    "diagram",
+    "visualization",
+    "javascript"
+  ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "npm run build:ts & npm run build:sass",
