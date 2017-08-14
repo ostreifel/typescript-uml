@@ -13,18 +13,18 @@ Hit Ctr+f and start typing to search for a node by name. Enter button/click the 
 
 ### View Details on specific node
 Click a node or edge to see more details about it
-Hit esc to close element info
+Hit esc to close element info  
 ![Select Node](images/selectNode.gif)
 
 ### Hide nodes
 Click the node's name to toggle its visibility in the graph.  
 ![Select Node](images/toggleNode.gif)
 
-### Go to the declaration of the node in the code file
+### Go to the declaration of the node in the code file  
 ![Goto code](images/gotoCode.gif)
 
 ### Rearrange the nodes
-Click and drag nodes to move them.
+Click and drag nodes to move them.  
 ![Move node](images/moveNode.gif)
 
 ### Undo/Redo changes to the graph
