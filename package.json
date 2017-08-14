@@ -2,7 +2,7 @@
   "name": "typescript-uml",
   "displayName": "Typescript UML",
   "description": "Create uml diagrams of typescript files",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "ottostreifel",
   "engines": {
     "vscode": "^1.14.0"
@@ -12,7 +12,7 @@
       "url": "https://github.com/ostreifel/typescript-uml.git"
   },
   "categories": [
-    "Other"
+    "Languages"
   ],
   "activationEvents": [
     "onCommand:tsuml.show"
