@@ -11,6 +11,7 @@ import {
     getPositions,
     INodePositions,
     presetLayout,
+    coseLayout,
 } from "./Layouts";
 import { panControls } from "./panControls";
 import { registerSearchBox } from "./searchControl";

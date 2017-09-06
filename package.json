@@ -52,6 +52,7 @@
   },
   "devDependencies": {
     "@types/applicationinsights-js": "^1.0.4",
+    "@types/collections": "^5.0.0",
     "@types/jquery": "^3.2.9",
     "@types/mocha": "^2.2.41",
     "@types/node": "^6.0.40",
@@ -65,14 +66,16 @@
   },
   "dependencies": {
     "child_process": "^1.0.2",
-    "cytoscape": "^3.1.5",
+    "collections": "^5.0.7",
+    "cytoscape": "^3.2.1",
     "electron": "^1.7.5",
     "jquery": "^3.2.1",
     "office-ui-fabric-react": "^4.32.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "tslint": "^5.6.0",
-    "tsutils": "^2.8.0",
-    "typescript": "^2.4.2"
+    "tslint": "^5.5.0",
+    "tsutils": "^2.7.1",
+    "typescript": "^2.0.3",
+    "vscode": "^1.0.0"
   }
 }
