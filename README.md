@@ -44,6 +44,7 @@ Ctr+S/Ctr+O to save the diagram to disk. Included in the save file are
 
 ## Known Issues
 
+- Is currently windows only
 - Layout of nodes does not take into account the references to and from them.
 - If there a lot of nodes with the same name they should have some disambiguation especially when searching or listed as references to/from a node
 - Expressions without identifiers are not included in the diagram.

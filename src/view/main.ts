@@ -16,6 +16,7 @@ function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({
         show: false,
+        icon: path.join(extensionPath, "images", "logo.ico"),
         title: "Loading file....",
     });
     mainWindow.maximize();

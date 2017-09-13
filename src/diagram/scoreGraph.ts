@@ -59,18 +59,18 @@ function scoreCrossingEdges(eles: Cy.NodeCollection): number {
     // Initialize output intersection list IL to be empty;
 
     // While (EQ is nonempty) {
-    while (eventQueue.N > 0) {
+    // while (eventQueue.N > 0) {
 
-    }
+    // }
     //     Let E = the next event from EQ;
     //     If (E is a left endpoint) {
     //         Let segE = E's segment;
     //         Add segE to SL;
     //         Let segA = the segment Above segE in SL;
     //         Let segB = the segment Below segE in SL;
-    //         If (I = Intersect( segE with segA) exists) 
+    //         If (I = Intersect( segE with segA) exists)
     //             Insert I into EQ;
-    //         If (I = Intersect( segE with segB) exists) 
+    //         If (I = Intersect( segE with segB) exists)
     //             Insert I into EQ;
     //     }
     //     Else If (E is a right endpoint) {
@@ -78,8 +78,8 @@ function scoreCrossingEdges(eles: Cy.NodeCollection): number {
     //         Let segA = the segment Above segE in SL;
     //         Let segB = the segment Below segE in SL;
     //         Delete segE from SL;
-    //         If (I = Intersect( segA with segB) exists) 
-    //             If (I is not in EQ already) 
+    //         If (I = Intersect( segA with segB) exists)
+    //             If (I is not in EQ already)
     //                 Insert I into EQ;
     //     }
     //     Else {  // E is an intersection event
@@ -89,10 +89,10 @@ function scoreCrossingEdges(eles: Cy.NodeCollection): number {
     //         Let segA = the segment above segE2 in SL;
     //         Let segB = the segment below segE1 in SL;
     //         If (I = Intersect(segE2 with segA) exists)
-    //             If (I is not in EQ already) 
+    //             If (I is not in EQ already)
     //                 Insert I into EQ;
     //         If (I = Intersect(segE1 with segB) exists)
-    //             If (I is not in EQ already) 
+    //             If (I is not in EQ already)
     //                 Insert I into EQ;
     //     }
     //     remove E from EQ;
