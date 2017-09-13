@@ -1,7 +1,7 @@
 import * as assert from "assert";
 
 import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
-import { BoxGridLayout, INodeHierarchy } from "../src/view/Layouts";
+import { BoxGridLayout, INodeHierarchy } from "../src/view/layouts";
 
 suite("layout tests", function(this: ISuiteCallbackContext) {
 

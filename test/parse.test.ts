@@ -4,7 +4,7 @@ import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import * as path from "path";
 import * as ts from "typescript";
 import { computeDiagramForFile } from "../src/diagram/computeDiagram";
-import { IDiagramNode } from "../src/diagram/DiagramModel";
+import { IDiagramNode } from "../src/diagram/diagramModel";
 import { NodeReferenceWalker } from "../src/diagram/NodeReferenceWalker";
 
 // Defines a Mocha test suite to group tests of similar kind together

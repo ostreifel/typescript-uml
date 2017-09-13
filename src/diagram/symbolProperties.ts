@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { IDiagramFilePosition } from "./DiagramModel";
+import { IDiagramFilePosition } from "./diagramModel";
 
 function getType(symbol: ts.Symbol): string {
     if (symbol.flags & ts.SymbolFlags.Class) {

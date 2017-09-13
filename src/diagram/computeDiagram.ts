@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./DiagramModel";
+import { IDiagramEdge, IDiagramElement, IDiagramNode } from "./diagramModel";
 import { IGraphNode, NodeReferenceWalker } from "./NodeReferenceWalker";
 import { getSymbolProperties } from "./symbolProperties";
 

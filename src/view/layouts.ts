@@ -1,5 +1,5 @@
 
-import { IDiagramElement } from "../diagram/DiagramModel";
+import { IDiagramElement } from "../diagram/diagramModel";
 import { getNodes } from "./getEles";
 
 export function coseLayout(): Cy.CoseLayoutOptions {

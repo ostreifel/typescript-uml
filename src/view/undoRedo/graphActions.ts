@@ -1,6 +1,6 @@
 
 import { getNodes } from "../getEles";
-import { getPositions, INodePositions, presetLayout } from "../Layouts";
+import { getPositions, INodePositions, presetLayout } from "../layouts";
 import { UndoRedoAction } from "./undoRedo";
 
 export interface IPositionDiff {

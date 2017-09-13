@@ -3,7 +3,7 @@ import { KeyCodes } from "office-ui-fabric-react/lib/Utilities";
 import * as path from "path";
 import * as React from "react";
 import * as ReactDom from "react-dom";
-import { IDiagramFilePosition } from "../diagram/DiagramModel";
+import { IDiagramFilePosition } from "../diagram/diagramModel";
 import { getNodes } from "./getEles";
 import { ISelectAction, SelectAction } from "./undoRedo/SelectAction";
 import { toggleNodeAction } from "./undoRedo/ToggleNode";
