@@ -50,10 +50,9 @@ export type type1;
 
 export enum Enum1 {
     enumMember1,
-    enumMember2,
 }
 
-export const constant_Variable = "const";
+export const constant_variable = "const";
 export var variable = "variable";
 export class Class {
     public classProperty;

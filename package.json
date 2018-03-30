@@ -3,7 +3,7 @@
   "displayName": "Typescript UML",
   "description": "Create uml diagrams of typescript files",
   "icon": "images/logo.png",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "publisher": "ottostreifel",
   "engines": {
     "vscode": "^1.14.0"
