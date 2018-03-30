@@ -167,7 +167,7 @@ class PositionLink extends React.Component<{pos: IDiagramFilePosition}, {}> {
     }
     private focusLine() {
         const {fileName, line, column} = this.props.pos;
-        spawn("code", ["-g", `${fileName}:${line}:${column}`]);
+        spawn("code", ["-g -r", `${fileName}:${line}:${column}`]);
     }
     private posName({fileName, line, column}: IDiagramFilePosition): string {
         return `${path.basename(fileName)}:${line}:${column}`;

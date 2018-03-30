@@ -42,6 +42,35 @@ Ctr+S/Ctr+O to save the diagram to disk. Included in the save file are
 - path to the file compiled
 - the undo/redo stacks
 
+# Key
+```typescript
+import import_alias from "somewhere";
+
+export type type1;
+
+export enum Enum1 {
+    enumMember1,
+    enumMember2,
+}
+
+export const constant_Variable = "const";
+export var variable = "variable";
+export class Class {
+    public classProperty;
+    public constructor {
+    }
+    public method() {
+    }
+}
+
+export namespace module1 {
+    export function function1() {
+    }
+}
+```
+Will show as  
+![diagram of above code showing shapes and colors for each component](images/key.png)
+
 ## Known Issues
 
 - Is currently windows only
