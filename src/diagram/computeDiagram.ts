@@ -14,7 +14,7 @@ function getFileContext(fileName: string): IReferencesContext {
         allowJs: true,
     });
     program.getTypeChecker();
-    const sourceFile = program.getSourceFile(fileName);
+    const sourceFile = program.getSourceFile(fileName) as ts.SourceFile;
     return {
         sourceFile,
         references: {},

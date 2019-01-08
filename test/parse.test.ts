@@ -17,7 +17,7 @@ suite("Parse tests", function(this: ISuiteCallbackContext) {
     function compile(fileName) {
         const filePath = toFilePath(fileName);
         const program = ts.createProgram([filePath], {});
-        const sourceFile = program.getSourceFile(filePath);
+        const sourceFile = program.getSourceFile(filePath) as ts.SourceFile;
         const typechecker = program.getTypeChecker();
         return {
             sourceFile,

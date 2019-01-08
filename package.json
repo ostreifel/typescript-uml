@@ -3,7 +3,7 @@
   "displayName": "Typescript UML",
   "description": "Create uml diagrams of typescript files",
   "icon": "images/logo.png",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "publisher": "ottostreifel",
   "engines": {
     "vscode": "^1.14.0"
@@ -44,7 +44,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "npm run build:ts & npm run build:sass",
     "watch": "concurrently \"npm run watch:ts\" \"npm run watch:sass\"",
-    "build:ts": "tsc -p ./",
+    "build:ts": "node ./node_modules/typescript/bin/tsc -p ./",
     "build:sass": "node ./node_modules/node-sass/bin/node-sass html/scss -o html/css",
     "watch:ts": "tsc -watch -p ./",
     "watch:sass": "node ./node_modules/node-sass/bin/node-sass -w html/scss -o html/css",
@@ -76,6 +76,6 @@
     "react-dom": "^15.6.1",
     "tslint": "^5.5.0",
     "tsutils": "^2.7.1",
-    "typescript": "^2.0.3"
+    "typescript": "^2.9.2"
   }
 }

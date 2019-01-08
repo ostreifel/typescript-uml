@@ -12,7 +12,6 @@ import { toggleTypeAction } from "./undoRedo/ToggleType";
 const infoElement = document.getElementsByClassName("element-info")[0];
 
 class GraphHighlights {
-    private cy?: Cy.Core;
     private selectAction = new SelectAction(showInfo, hideInfo);
     private targetId: string;
     public getSelectedId() {
@@ -28,12 +27,10 @@ class GraphHighlights {
     }
     public attach(cy: Cy.Core) {
         this.detach();
-        this.cy = cy;
         this.selectAction.attach(cy);
     }
     public detach() {
         this.selectAction.detach();
-        this.cy = undefined;
     }
 }
 export const highlighted = new GraphHighlights();
