@@ -1,9 +1,8 @@
+/* tslint:disable */
+//test file dont lint
 import * as import_alias from "assert";
 
-// force use so compiler doesn't remove import from example file
-// tslint:disable-next-line:no-console
 console.log(import_alias);
-
 
 export type type1 = number;
 
